@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国象棋 - 人机对战</title>
+    <style>
+        * { box-sizing: border-box; font-family: "Kaiti SC", "楷体", STKaiti, serif; }
+        body {
+            background-color: #2c1d11;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            user-select: none;
+        }
+        h1 { margin: 10px 0; font-size: 28px; text-shadow: 2px 2px 4px #000; }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .status-panel {
+            background: #4a3425;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid #8b5a2b;
+            font-size: 18px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        #chessboard {
+            width: 450px;
+            height: 500px;
+            background-color: #e3b273;
+            border: 4px solid #5c3a21;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            border-radius: 4px;
+        }
+        /* 棋盘网格绘制 */
+        .board-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .river-text {
+            font-size: 28px;
+            fill: #5c3a21;
+            font-weight: bold;
+            font-family: "Kaiti SC", "楷体", serif;
+        }
+        /* 棋子样式 */
+        .piece {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+            transform: translate(-50%, -50%);
+        }
+        .piece.red {
+            background: radial-gradient(circle at 30% 30%, #fefefe, #f4cfb1, #d69861);
+            color: #cc0000;
+            border: 2px solid #a32a00;
+        }
+        .piece.black {
+            background: radial-gradient(circle at 30% 30%, #fefefe, #e2d3c1, #a89278);
+            color: #000000;
+            border: 2px solid #333;
+        }
+        .piece.selected {
+            box-shadow: 0 0 15px #ffff00;
+            transform: translate(-50%, -50%) scale(1.15);
+            z-index: 3;
+        }
+        /* 提示点 */
+        .hint-dot {
+            width: 14px;
+            height: 14px;
+            background-color: rgba(0, 255, 0, 0.6);
+            border-radius: 50%;
+            position: absolute;
+            z-index: 2;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+        }
+        .hint-dot:hover {
+            background-color: rgba(0, 255, 0, 0.9);
+            transform: translate(-50%, -50%) scale(1.3);
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background: #8b5a2b;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #a66d3b; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>中国象棋 - 人机对战</h1>
+        <div class="status-panel" id="status">轮到你出手（红方）</div>
+        <div id="chessboard">
+            <svg class="board-svg" viewBox="0 0 450 500">
+                <!-- 棋盘边框线与网格 -->
+                <defs>
+                    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#5c3a21" stroke-width="1.5"/>
+                    </pattern>
+                </defs>
+                <!-- 主外框 -->
+                <rect x="25" y="25" width="400" height="450" fill="none" stroke="#5c3a21" stroke-width="3"/>
+                <!-- 网格线 (红黑两边) -->
+                <g fill="none" stroke="#5c3a21" stroke-width="1.5">
+                    <!-- 横线 -->
+                    <path d="M 25 75 L 425 75 M 25 125 L 425 125 M 25 175 L 425 175 M 25 225 L 425 225
+                             M 25 275 L 425 275 M 25 325 L 425 325 M 25 375 L 425 375 M 25 425 L 425 425"/>
+                    <!-- 竖线（楚河汉界隔开） -->
+                    <path d="M 75 25 L 75 225 M 125 25 L 125 225 M 175 25 L 175 225 M 225 25 L 225 225
+                             M 275 25 L 275 225 M 325 25 L 325 225 M 375 25 L 375 225"/>
+                    <path d="M 75 275 L 75 475 M 125 275 L 125 475 M 175 275 L 175 475 M 225 275 L 225 475
+                             M 275 275 L 275 475 M 325 275 L 325 475 M 375 275 L 375 475"/>
+                    <!-- 九宫格斜线 -->
+                    <path d="M 175 25 L 275 125 M 275 25 L 175 125"/>
+                    <path d="M 175 375 L 275 475 M 275 375 L 175 475"/>
+                </g>
+                <!-- 楚河汉界 -->
+                <text x="100" y="258" class="river-text">楚 河</text>
+                <text x="280" y="258" class="river-text">汉 界</text>
+            </svg>
+        </div>
+        <div class="controls">
+            <button onclick="initGame()">重新开始</button>
+        </div>
+    </div>
+
+<script>
+/**
+ * 象棋核心逻辑与人机对抗 Engine
+ */
+
+// 阵营常量: 1为红方(玩家)，-1为黑方(AI)
+const RED = 1;
+const BLACK = -1;
+
+// 棋子类型与价值评级 (用于AI Minimax评估)
+const PIECES = {
+    'r': { name: '車', val: 90 },  'n': { name: '馬', val: 40 },
+    'b': { name: '象', val: 20 },  'a': { name: '士', val: 20 },
+    'k': { name: '將', val: 1000}, 'c': { name: '砲', val: 45 },
+    'p': { name: '卒', val: 10 },
+    'R': { name: '俥', val: 90 },  'N': { name: '傌', val: 40 },
+    'B': { name: '相', val: 20 },  'A': { name: '仕', val: 20 },
+    'K': { name: '帥', val: 1000}, 'C': { name: '炮', val: 45 },
+    'P': { name: '兵', val: 10 }
+};
+
+// 初始棋盘 setup: 10行9列，大写红方，小写黑方
+const initialBoard = [
+    ['r','n','b','a','k','a','b','n','r'],
+    [null,null,null,null,null,null,null,null,null],
+    [null,'c',null,null,null,null,null,'c',null],
+    ['p',null,'p',null,'p',null,'p',null,'p'],
+    [null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null],
+    ['P',null,'P',null,'P',null,'P',null,'P'],
+    [null,'C',null,null,null,null,null,'C',null],
+    [null,null,null,null,null,null,null,null,null],
+    ['R','N','B','A','K','A','B','N','R']
+];
+
+let board = [];
+let turn = RED; // 红方先手
+let selectedPos = null;
+let isGameOver = false;
+
+// 坐标映射转像素坐标 (0-8 -> x, 0-9 -> y)
+function getPosPx(r, c) {
+    return { x: 25 + c * 50, y: 25 + r * 50 };
+}
+
+// 得到棋子阵营
+function getSide(piece) {
+    if (!piece) return 0;
+    return piece === piece.toUpperCase() ? RED : BLACK;
+}
+
+// 初始化棋局
+function initGame() {
+    board = JSON.parse(JSON.stringify(initialBoard));
+    turn = RED;
+    selectedPos = null;
+    isGameOver = false;
+    updateStatus("轮到你出手（红方）");
+    renderBoard();
+}
+
+function updateStatus(text) {
+    document.getElementById('status').innerText = text;
+}
+
+// 渲染棋盘 UI
+function renderBoard() {
+    const boardEl = document.getElementById('chessboard');
+    // 清除已有的 DOM 棋子和提示点
+    const oldItems = boardEl.querySelectorAll('.piece, .hint-dot');
+    oldItems.forEach(el => el.remove());
+
+    // 渲染棋子
+    for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 9; c++) {
+            const piece = board[r][c];
+            if (piece) {
+                const side = getSide(piece);
+                const pEl = document.createElement('div');
+                const px = getPosPx(r, c);
+                pEl.className = `piece ${side === RED ? 'red' : 'black'}`;
+                if (selectedPos && selectedPos.r === r && selectedPos.c === c) {
+                    pEl.classList.add('selected');
+                }
+                pEl.innerText = PIECES[piece].name;
+                pEl.style.left = `${px.x}px`;
+                pEl.style.top = `${px.y}px`;
+                pEl.onclick = () => onTileClick(r, c);
+                boardEl.appendChild(pEl);
+            }
+        }
+    }
+
+    // 若玩家选中了棋子，渲染可走路径点
+    if (selectedPos && turn === RED && !isGameOver) {
+        const moves = getLegalMoves(board, selectedPos.r, selectedPos.c);
+        moves.forEach(m => {
+            const dot = document.createElement('div');
+            const px = getPosPx(m.r, m.c);
+            dot.className = 'hint-dot';
+            dot.style.left = `${px.x}px`;
+            dot.style.top = `${px.y}px`;
+            dot.onclick = () => onTileClick(m.r, m.c);
+            boardEl.appendChild(dot);
+        });
+    }
+}
+
+// 玩家点击棋盘事件
+function onTileClick(r, c) {
+    if (isGameOver || turn !== RED) return;
+
+    const piece = board[r][c];
+    const side = getSide(piece);
+
+    // 点选了自己的棋子
+    if (side === RED) {
+        selectedPos = { r, c };
+        renderBoard();
+        return;
+    }
+
+    // 若已选中某棋子，尝试落子到 (r, c)
+    if (selectedPos) {
+        const legalMoves = getLegalMoves(board, selectedPos.r, selectedPos.c);
+        const isValid = legalMoves.some(m => m.r === r && m.c === c);
+
+        if (isValid) {
+            makeMove(selectedPos, { r, c });
+            selectedPos = null;
+            renderBoard();
+
+            if (!checkGameEnd()) {
+                turn = BLACK;
+                updateStatus("AI 正在思考中...");
+                setTimeout(aiTurn, 300); // 延时触发AI, 给UI渲染留出时间
+            }
+        }
+    }
+}
+
+// 执行一步棋
+function makeMove(from, to) {
+    board[to.r][to.c] = board[from.r][from.c];
+    board[from.r][from.c] = null;
+}
+
+// 检测游戏结束状态
+function checkGameEnd() {
+    let redKing = false, blackKing = false;
+    for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 9; c++) {
+            if (board[r][c] === 'K') redKing = true;
+            if (board[r][c] === 'k') blackKing = true;
+        }
+    }
+    if (!redKing) {
+        updateStatus("游戏结束：AI 获胜！");
+        isGameOver = true;
+        return true;
+    }
+    if (!blackKing) {
+        updateStatus("游戏结束：恭喜你获得胜利！");
+        isGameOver = true;
+        return true;
+    }
+    return false;
+}
+
+/**
+ * 规则判断引擎
+ */
+function getLegalMoves(b, r, c) {
+    const p = b[r][c];
+    if (!p) return [];
+    const side = getSide(p);
+    const type = p.toLowerCase();
+    const moves = [];
+
+    const isInsideBoard = (nr, nc) => nr >= 0 && nr < 10 && nc >= 0 && nc < 9;
+    const isPalace = (nr, nc, s) => {
+        if (nc < 3 || nc > 5) return false;
+        return s === RED ? (nr >= 7 && nr <= 9) : (nr >= 0 && nr <= 2);
+    };
+
+    const addMove = (nr, nc) => {
+        if (isInsideBoard(nr, nc)) {
+            const targetSide = getSide(b[nr][nc]);
+            if (targetSide !== side) {
+                moves.push({ r: nr, c: nc });
+            }
+        }
+    };
+
+    // 1. 車 (Rook)
+    if (type === 'r') {
+        const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+        dirs.forEach(([dr, dc]) => {
+            let nr = r + dr, nc = c + dc;
+            while (isInsideBoard(nr, nc)) {
+                if (!b[nr][nc]) {
+                    moves.push({ r: nr, c: nc });
+                } else {
+                    if (getSide(b[nr][nc]) !== side) moves.push({ r: nr, c: nc });
+                    break;
+                }
+                nr += dr; nc += dc;
+            }
+        });
+    }
+
+    // 2. 馬 (Knight)
+    if (type === 'n') {
+        const knightMoves = [
+            { dr: -2, dc: -1, legR: -1, legC: 0 }, { dr: -2, dc: 1, legR: -1, legC: 0 },
+            { dr: 2, dc: -1, legR: 1, legC: 0 },   { dr: 2, dc: 1, legR: 1, legC: 0 },
+            { dr: -1, dc: -2, legR: 0, legC: -1 }, { dr: 1, dc: -2, legR: 0, legC: -1 },
+            { dr: -1, dc: 2, legR: 0, legC: 1 },  { dr: 1, dc: 2, legR: 0, legC: 1 }
+        ];
+        knightMoves.forEach(m => {
+            const nr = r + m.dr, nc = c + m.dc;
+            const legR = r + m.legR, legC = c + m.legC;
+            if (isInsideBoard(nr, nc) && !b[legR][legC]) {
+                addMove(nr, nc);
+            }
+        });
+    }
+
+    // 3. 象/相 (Elephant)
+    if (type === 'b') {
+        const dirs = [[2,2],[2,-2],[-2,2],[-2,-2]];
+        dirs.forEach(([dr, dc]) => {
+            const nr = r + dr, nc = c + dc;
+            const eyeR = r + dr/2, eyeC = c + dc/2;
+            if (isInsideBoard(nr, nc) && !b[eyeR][eyeC]) {
+                // 不能过河
+                if ((side === RED && nr >= 5) || (side === BLACK && nr <= 4)) {
+                    addMove(nr, nc);
+                }
+            }
+        });
+    }
+
+    // 4. 士/仕 (Advisor)
+    if (type === 'a') {
+        const dirs = [[1,1],[1,-1],[-1,1],[-1,-1]];
+        dirs.forEach(([dr, dc]) => {
+            const nr = r + dr, nc = c + dc;
+            if (isPalace(nr, nc, side)) addMove(nr, nc);
+        });
+    }
+
+    // 5. 將/帥 (King)
+    if (type === 'k') {
+        const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+        dirs.forEach(([dr, dc]) => {
+            const nr = r + dr, nc = c + dc;
+            if (isPalace(nr, nc, side)) addMove(nr, nc);
+        });
+    }
+
+    // 6. 炮/砲 (Cannon)
+    if (type === 'c') {
+        const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+        dirs.forEach(([dr, dc]) => {
+            let nr = r + dr, nc = c + dc;
+            let jumped = false;
+            while (isInsideBoard(nr, nc)) {
+                if (!b[nr][nc]) {
+                    if (!jumped) moves.push({ r: nr, c: nc });
+                } else {
+                    if (!jumped) {
+                        jumped = true; // 寻找炮架
+                    } else {
+                        if (getSide(b[nr][nc]) !== side) moves.push({ r: nr, c: nc });
+                        break;
+                    }
+                }
+                nr += dr; nc += dc;
+            }
+        });
+    }
+
+    // 7. 兵/卒 (Pawn)
+    if (type === 'p') {
+        const dir = side === RED ? -1 : 1; // 红兵向上，黑卒向下
+        if (isInsideBoard(r + dir, c)) addMove(r + dir, c);
+        // 过河后可左右移动
+        const crossedRiver = side === RED ? (r <= 4) : (r >= 5);
+        if (crossedRiver) {
+            if (isInsideBoard(r, c - 1)) addMove(r, c - 1);
+            if (isInsideBoard(r, c + 1)) addMove(r, c + 1);
+        }
+    }
+
+    return moves;
+}
+
+/**
+ * 极简 AI 人机算法 (Minimax 搜索与评估)
+ */
+function aiTurn() {
+    let bestMove = null;
+    let bestValue = -Infinity;
+
+    // 搜索 AI (BLACK) 的所有可走步数，寻找最优解
+    const allMoves = getAllMovesForSide(board, BLACK);
+    
+    // 随机打乱移动列表，增加 AI 落子的多样性
+    allMoves.sort(() => Math.random() - 0.5);
+
+    for (let move of allMoves) {
+        // 模拟落子
+        const targetPiece = board[move.to.r][move.to.c];
+        makeMove(move.from, move.to);
+
+        // 评估棋盘分值（Minimax 一层深度 + 位置价值评估）
+        const boardValue = evaluateBoard(board);
+
+        // 撤销落子
+        board[move.from.r][move.from.c] = board[move.to.r][move.to.c];
+        board[move.to.r][move.to.c] = targetPiece;
+
+        if (boardValue > bestValue) {
+            bestValue = boardValue;
+            bestMove = move;
+        }
+    }
+
+    if (bestMove) {
+        makeMove(bestMove.from, bestMove.to);
+        renderBoard();
+        if (!checkGameEnd()) {
+            turn = RED;
+            updateStatus("轮到你出手（红方）");
+        }
+    } else {
+        updateStatus("AI 无路可走，你赢了！");
+        isGameOver = true;
+    }
+}
+
+// 获取某阵营的所有合法走法
+function getAllMovesForSide(b, side) {
+    const list = [];
+    for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 9; c++) {
+            if (getSide(b[r][c]) === side) {
+                const moves = getLegalMoves(b, r, c);
+                moves.forEach(m => {
+                    list.push({ from: { r, c }, to: m });
+                });
+            }
+        }
+    }
+    return list;
+}
+
+// 局势评估函数：计算黑方相对红方的局势优势
+function evaluateBoard(b) {
+    let score = 0;
+    for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 9; c++) {
+            const piece = b[r][c];
+            if (piece) {
+                const side = getSide(piece);
+                let val = PIECES[piece].val;
+                
+                // 过河卒加分评估
+                if (piece.toLowerCase() === 'p') {
+                    if (side === BLACK && r >= 5) val += 20;
+                    if (side === RED && r <= 4) val += 20;
+                }
+
+                if (side === BLACK) score += val;
+                else score -= val;
+            }
+        }
+    }
+    return score;
+}
+
+// 页面加载完成后启动
+window.onload = initGame;
+</script>
+</body>
+</html>
