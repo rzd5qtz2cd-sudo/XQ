@@ -1,222 +1,246 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>水浒传 · 鲁提辖拳打镇关西</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>我的主页</title>
 <style>
-:root{--ink:#1d1a16;--paper:#d9c9a3;--paper2:#c8b588;--seal:#a3261c;--jade:#2f5d50;--gold:#b88a2e}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--ink);color:var(--paper);font-family:"STKaiti","KaiTi","Kaiti SC","Songti SC","SimSun",serif}
-#app{max-width:960px;margin:0 auto;padding:10px}
-h1{margin:4px 0 8px;font-size:22px;letter-spacing:.3em;font-weight:700;color:var(--paper)}
-h1 small{font-size:14px;letter-spacing:.1em;color:var(--gold);margin-left:10px}
-#hud{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-.card{flex:1;min-width:200px;background:#2b261f;border:2px solid var(--gold);padding:6px 10px;border-radius:2px}
-.bar{height:10px;background:#111;border:1px solid #000;margin:3px 0 4px}
-.bar i{display:block;height:100%;transition:width .4s}
-#wrap{position:relative}
-canvas{width:100%;display:block;border:3px solid var(--gold);background:#8a7a58;cursor:pointer}
-#menu{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}
-button{font:inherit;font-size:18px;padding:6px 18px;background:var(--seal);color:#f3e6c4;border:2px solid var(--gold);cursor:pointer;letter-spacing:.2em}
-button:hover:enabled{filter:brightness(1.2)}
-button:disabled{background:#555;color:#999;cursor:not-allowed}
-button.on{background:var(--jade);outline:3px solid var(--paper)}
-#tip{flex:1;color:var(--gold);font-size:15px}
-#log{height:96px;overflow:auto;background:#17140f;border:1px solid #5a4a2a;padding:6px 10px;font-size:15px;line-height:1.6}
-#log div:last-child{color:#fff}
-#ov{position:absolute;inset:0;background:rgba(20,16,10,.88);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
-#ov .box{max-width:560px;background:var(--paper);color:#2a2014;border:4px double var(--seal);padding:22px 28px}
-#ov h2{margin:0 0 10px;font-size:28px;letter-spacing:.3em;color:var(--seal)}
-#ov p{font-size:17px;line-height:1.8;margin:8px 0;text-align:left}
-#ov button{margin-top:10px}
-.hide{display:none!important}
+:root{--bg:#e9edf1;--sf:#fff;--ink:#12202b;--sub:#6b7a88;--line:#d5dce3;--ac:#2f5bea;--lcd:#b9c79a;--lcdi:#25301a;--shadow:0 1px 0 rgba(18,32,43,.06);
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10171d;--sf:#1a242d;--ink:#e8eef3;--sub:#8b9aa8;--line:#2a3743;--ac:#6f8cff;--lcd:#7f8f63;--lcdi:#141b0d}}
+:root[data-theme="dark"]{--bg:#10171d;--sf:#1a242d;--ink:#e8eef3;--sub:#8b9aa8;--line:#2a3743;--ac:#6f8cff;--lcd:#7f8f63;--lcdi:#141b0d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+#app{max-width:560px;margin:0 auto;padding:16px 16px 96px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 0 14px}
+.clock{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-size:46px;font-weight:700;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums}
+.date{color:var(--sub);font-size:14px;margin-top:6px}
+.pill{height:40px;padding:0 16px;border-radius:20px;background:var(--sf);border:1px solid var(--line);font-weight:600;font-size:14px}
+.pill.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.search{width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--sf);padding:0 16px;margin-bottom:18px;outline:none}
+.search:focus,.pill:focus-visible,.tile:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.path{display:flex;align-items:center;gap:10px;margin:8px 0 18px}
+.back{width:44px;height:44px;border-radius:14px;background:var(--sf);border:1px solid var(--line);font-size:20px}
+.path h1{font-size:22px;margin:0;flex:1}
+.hint{color:var(--sub);font-size:13px;margin:0 2px 10px}
+.folders{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.folder{position:relative;min-height:132px;border-radius:24px 24px 24px 8px;padding:14px;text-align:left;color:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.folder:before{content:"";position:absolute;right:-18px;top:-18px;width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.14)}
+.folder .ic{font-size:34px;line-height:1}
+.folder b{display:block;font-size:18px}
+.folder small{opacity:.85;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 10px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;padding:0;min-width:0}
+.tile i{font-style:normal;width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:30px;color:#fff}
+.tile span{font-size:13px;line-height:1.25;max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
+.add i{background:transparent!important;border:2px dashed var(--sub);color:var(--sub);font-size:26px}
+.add span{color:var(--sub)}
+.edit .folder,.edit .tile:not(.add) i{animation:wob .45s ease-in-out infinite alternate}
+.edit .folder:nth-child(2n),.edit .tile:nth-child(2n) i{animation-delay:.2s}
+@keyframes wob{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
+@media(prefers-reduced-motion:reduce){.edit .folder,.edit .tile i{animation:none}}
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--sf);border:1px solid var(--line);border-radius:14px;text-align:left}
+.row i{font-style:normal;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:20px}
+.row small{color:var(--sub);display:block;font-size:12px}
+.empty{color:var(--sub);text-align:center;padding:40px 0}
+/* pager */
+.lcd{background:var(--lcd);color:var(--lcdi);border-radius:20px;border:3px solid var(--ink);padding:12px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;min-height:340px;max-height:56vh;overflow:auto;box-shadow:inset 0 2px 6px rgba(0,0,0,.25)}
+.msg{padding:8px 0;border-bottom:1px dashed rgba(0,0,0,.3)}
+.msg:last-child{border:0}
+.msg .m{font-size:12px;opacity:.75}
+.msg .t{font-size:16px;word-break:break-all}
+.msg.me{text-align:right}
+.send{display:flex;gap:8px;margin-top:12px}
+.send input{flex:1;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--sf);padding:0 14px;outline:none}
+.send button{height:48px;padding:0 20px;border-radius:14px;background:var(--ac);color:#fff;font-weight:700}
+.sub{display:flex;gap:8px;margin-top:10px}
+.sub button{flex:1;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--sf);font-size:13px;color:var(--sub)}
+/* sheet */
+.mask{position:fixed;inset:0;background:rgba(10,18,26,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{width:100%;max-width:560px;background:var(--sf);border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sheet h2{margin:0 0 14px;font-size:18px}
+.sheet label{display:block;font-size:13px;color:var(--sub);margin:12px 0 4px}
+.sheet input,.sheet select{width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:0 12px;outline:none}
+.sw{display:flex;gap:10px;flex-wrap:wrap}
+.sw button{width:36px;height:36px;border-radius:50%;border:3px solid transparent}
+.sw button.sel{border-color:var(--ink)}
+.acts{display:flex;gap:10px;margin-top:20px}
+.acts button{flex:1;height:48px;border-radius:14px;font-weight:700;border:1px solid var(--line)}
+.acts .ok{background:var(--ac);color:#fff;border-color:var(--ac)}
+.acts .del{color:#d83a2e}
+.acts .del.sure{background:#d83a2e;color:#fff;border-color:#d83a2e}
+.toast{position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:20px;font-size:14px;z-index:30}
 </style>
 </head>
 <body>
-<div id="app">
-  <h1>水浒传<small>第一回 · 鲁提辖拳打镇关西</small></h1>
-  <div id="hud">
-    <div class="card">鲁智深 <span id="lh"></span><div class="bar"><i id="lb" style="background:#3e8e6b"></i></div></div>
-    <div class="card">镇关西 <span id="bh"></span><div class="bar"><i id="bb" style="background:#b23a2c"></i></div>
-      拳 <b id="fc">0</b>/3　脚 <b id="kc">0</b>/2　<span id="turn"></span></div>
-  </div>
-  <div id="wrap">
-    <canvas id="cv" width="720" height="480"></canvas>
-    <div id="ov"><div class="box" id="ovb"></div></div>
-  </div>
-  <div id="menu">
-    <button id="bF">拳击</button><button id="bK">脚踢</button><button id="bW">待机</button>
-    <span id="tip"></span>
-  </div>
-  <div id="log"></div>
-</div>
+<div id="app"></div>
 <script>
-const T=60,W=12,H=8,cv=document.getElementById('cv'),g=cv.getContext('2d');
-const $=id=>document.getElementById(id);
-const FIST=16,KICK=26,BOSSHP=100;
-const OBS={};
-[[3,1,'摊'],[4,1,'摊'],[3,6,'摊'],[4,6,'摊'],[6,3,'箱'],[6,4,'箱'],[10,1,'肉'],[11,1,'肉'],[1,1,'井'],[8,7,'箱'],[0,6,'树']]
-  .forEach(([x,y,c])=>OBS[x+','+y]=c);
-let U,phase,moved,mode,range,fx,fist,kick,busy;
+var COLORS=["#2f5bea","#0f9d8a","#e8921a","#e5533f","#7a4bd6","#3a4652"];
+var KEY="myhome.v1",PK="myhome.pager";
+// 之后接入云端：把 PAGER_API 换成你的接口地址（拉取 ESP32 推送的消息、发送消息）
+var PAGER_API=null;
+function uid(){return Math.random().toString(36).slice(2,9)}
+function defaults(){return[
+ {id:uid(),name:"小工具",icon:"🧰",color:0,items:[
+  {id:uid(),name:"调研问卷",icon:"📋",url:"",type:"link"},
+  {id:uid(),name:"文字转语音",icon:"🔊",url:"",type:"link"}]},
+ {id:uid(),name:"通讯",icon:"📟",color:1,items:[
+  {id:uid(),name:"传呼机",icon:"📟",url:"",type:"pager"}]},
+ {id:uid(),name:"小游戏",icon:"🎮",color:2,items:[
+  {id:uid(),name:"我的第一个游戏",icon:"🕹️",url:"",type:"link"}]}]}
+function load(k,d){try{var v=localStorage.getItem(k);if(v)return JSON.parse(v)}catch(e){}return d}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var AK="myhome.admin";
+// 已发布的内容：在管理模式点“导出配置”，把得到的JSON粘贴替换下面的 null，访客看到的就是它
+var PUBLISHED=null;
+// 管理口令的哈希（默认口令 1234，进入管理后点“改口令”生成新的并替换这里）
+var PASS_HASH="b3b955fb4f06f57176f6a52b91d282494e8e737d7e76e61a02b3b96f2df96f68";
+var admin=load(AK,false)===true;
+function clone(o){return JSON.parse(JSON.stringify(o))}
+var cats=admin?(load(KEY,null)||clone(PUBLISHED||defaults())):clone(PUBLISHED||defaults());
+function sha(s){if(!(window.crypto&&crypto.subtle))return Promise.resolve("");return crypto.subtle.digest("SHA-256",new TextEncoder().encode("myhome:"+s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")})}
+function editBtn(){return admin?'<button class="pill'+(S.edit?' on':'')+'" data-a="toggleEdit">'+(S.edit?'完成':'编辑')+'</button>':''}
+function adminBar(){return '<div class="sub" style="margin:-6px 0 16px"><button data-a="exportCfg">导出配置</button><button data-a="newPass">改口令</button><button data-a="resetPub">恢复已发布</button><button data-a="logout">退出管理</button></div>'}
+function miscSheet(s){
+ var h='<div class="mask" data-a="closeSheet"><div class="sheet" data-stop="1"><h2>'+esc(s.title)+'</h2>';
+ if(s.misc==="pass")h+='<label>管理口令</label><input id="f_pw" type="password" autocomplete="current-password"><div class="acts"><button data-a="closeSheet">取消</button><button class="ok" data-a="doUnlock">进入管理</button></div>';
+ else if(s.misc==="newpass")h+='<label>新口令</label><input id="f_pw" type="text"><div class="acts"><button data-a="closeSheet">取消</button><button class="ok" data-a="doNewPass">生成</button></div>'+(s.hash?'<label>把这串替换文件里的 PASS_HASH 的值</label><input readonly value="'+s.hash+'" onclick="this.select()">':'');
+ else if(s.misc==="export")h+='<label>复制后，替换 index.html 里 var PUBLISHED=null; 中的 null</label><textarea readonly style="width:100%;height:200px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:10px;font:12px ui-monospace,monospace">'+esc(s.json)+'</textarea><div class="acts"><button data-a="closeSheet">关闭</button><button class="ok" data-a="copyJson">复制</button></div>';
+ return h+'</div></div>';
+}
+var msgs=load(PK,null)||[{from:"ESP32",text:"设备已上线",t:Date.now()-60000},{from:"me",text:"收到",t:Date.now()-30000}];
+var S={view:"home",cat:null,edit:false,q:"",sheet:null};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function hm(t){var d=new Date(t);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function findCat(id){return cats.filter(function(c){return c.id===id})[0]}
+function persist(){if(admin)save(KEY,cats)}
+function toast(m){var e=document.createElement("div");e.className="toast";e.textContent=m;document.body.appendChild(e);setTimeout(function(){e.remove()},1800)}
 
-function init(){
-  U=[
-    {n:'鲁智深',c:'鲁',x:1,y:4,hp:180,max:180,side:0,col:'#2f5d50',dmg:0},
-    {n:'镇关西',c:'郑',x:10,y:3,hp:BOSSHP,max:BOSSHP,side:1,col:'#a3261c',dmg:12,boss:1},
-    {n:'伙计甲',c:'伙',x:8,y:2,hp:30,max:30,side:1,col:'#6b5a3a',dmg:8},
-    {n:'伙计乙',c:'伙',x:8,y:5,hp:30,max:30,side:1,col:'#6b5a3a',dmg:8}];
-  fist=0;kick=0;moved=false;mode=null;fx=[];busy=false;phase='player';
-  $('log').innerHTML='';
-  log('鲁提辖路见不平，要为金家父女讨个公道。');
-  startTurn();
-}
-function log(t){const d=document.createElement('div');d.textContent=t;$('log').appendChild(d);$('log').scrollTop=1e5}
-const alive=s=>U.filter(u=>u.hp>0&&(s===undefined||u.side===s));
-const at=(x,y)=>alive().find(u=>u.x===x&&u.y===y);
-const free=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&!OBS[x+','+y]&&!at(x,y);
-function reach(u,m){
-  const d={},q=[[u.x,u.y]];d[u.x+','+u.y]=0;
-  while(q.length){const [x,y]=q.shift(),k=d[x+','+y];if(k>=m)continue;
-    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const a=x+dx,b=y+dy,kk=a+','+b;
-      if(d[kk]===undefined&&free(a,b)){d[kk]=k+1;q.push([a,b])}}}
-  return d;
-}
-const adj=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y)===1;
-function startTurn(){
-  phase='player';moved=false;mode=null;
-  range=reach(U[0],4);ui();
-  $('tip').textContent='点击蓝色格子移动，或选择拳击/脚踢攻击相邻敌人。';
-}
-function ui(){
-  const L=U[0],B=U[1];
-  $('lh').textContent=L.hp+'/'+L.max;$('lb').style.width=L.hp/L.max*100+'%';
-  $('bh').textContent=B.hp+'/'+B.max;$('bb').style.width=B.hp/B.max*100+'%';
-  $('fc').textContent=fist;$('kc').textContent=kick;
-  $('turn').textContent=phase==='player'?'【我方回合】':'【敌方回合】';
-  const p=phase==='player'&&!busy,near=alive(1).some(e=>adj(L,e));
-  $('bF').disabled=$('bK').disabled=!(p&&near);$('bW').disabled=!p;
-  $('bF').classList.toggle('on',mode==='fist');$('bK').classList.toggle('on',mode==='kick');
-}
-$('bF').onclick=()=>{mode=mode==='fist'?null:'fist';ui()};
-$('bK').onclick=()=>{mode=mode==='kick'?null:'kick';ui()};
-$('bW').onclick=()=>endPlayer();
-cv.onclick=e=>{
-  if(phase!=='player'||busy)return;
-  const r=cv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/r.width*W),y=Math.floor((e.clientY-r.top)/r.height*H);
-  const L=U[0],t=at(x,y);
-  if(mode){
-    if(t&&t.side===1&&adj(L,t))attack(L,t,mode);
-    else $('tip').textContent='请点击相邻的红框敌人。';
-    return;
+function render(){
+ var a=document.getElementById("app"),h="";
+ var c=S.cat?findCat(S.cat):null;
+ if(S.view==="home"){
+  var d=new Date(),w="日一二三四五六"[d.getDay()];
+  h+='<div class="top"><div><div class="clock" id="clk">'+hm(d)+'</div><div class="date">'+(d.getMonth()+1)+'月'+d.getDate()+'日 星期'+w+'</div></div>'
+   +editBtn()+'</div>'
+   +'<input class="search" id="q" placeholder="搜索所有入口" value="'+esc(S.q)+'" autocomplete="off">'+(admin?adminBar():'');
+  if(S.q){
+   var r="";cats.forEach(function(cc){cc.items.forEach(function(it){
+    if((it.name+cc.name).toLowerCase().indexOf(S.q.toLowerCase())>-1)
+     r+='<button class="row" data-a="open" data-c="'+cc.id+'" data-i="'+it.id+'"><i style="background:'+COLORS[cc.color]+'">'+esc(it.icon)+'</i><div><b>'+esc(it.name)+'</b><small>'+esc(cc.name)+'</small></div></button>'})});
+   h+=r?'<div class="rows">'+r+'</div>':'<div class="empty">没有找到匹配的入口</div>';
+  }else{
+   if(S.edit)h+='<p class="hint">点任意分类即可修改或删除</p>';
+   h+='<div class="folders'+(S.edit?' edit':'')+'">';
+   cats.forEach(function(cc){h+='<button class="folder" style="background:'+COLORS[cc.color]+'" data-a="'+(S.edit?'editCat':'openCat')+'" data-c="'+cc.id+'"><span class="ic">'+esc(cc.icon)+'</span><span><b>'+esc(cc.name)+'</b><small>'+cc.items.length+' 个入口</small></span></button>'});
+   if(S.edit)h+='<button class="folder" style="background:var(--sf);color:var(--sub);border:2px dashed var(--sub);animation:none" data-a="newCat"><span class="ic">＋</span><span><b>新建分类</b></span></button>';
+   h+='</div>';
+   if(!cats.length)h+='<div class="empty">还没有分类，点右上角“编辑”添加</div>';
   }
-  if(!moved&&range[x+','+y]!==undefined&&!(x===L.x&&y===L.y)){
-    L.x=x;L.y=y;moved=true;range={};ui();
-    $('tip').textContent=alive(1).some(e=>adj(L,e))?'已移动。选择拳击或脚踢。':'已移动。无相邻敌人，点击待机结束回合。';
-  }
-};
-function hit(t,d,txt){
-  t.flash=12;fx.push({x:t.x*T+30,y:t.y*T+10,t:txt||('-'+d),life:50,col:'#ffd'});
-}
-function attack(L,t,m){
-  busy=true;mode=null;range={};
-  const d=m==='fist'?FIST:KICK,nm=m==='fist'?'拳':'脚';
-  L.lunge={x:t.x-L.x,y:t.y-L.y,f:10};
-  setTimeout(()=>{
-    if(t.boss){
-      if(m==='fist')fist++;else kick++;
-      const done=fist>=3&&kick>=2;
-      t.hp=done?0:Math.max(1,BOSSHP-FIST*fist-KICK*kick);
-      hit(t,d,m==='fist'?'拳 -'+d:'脚 -'+d);
-      log(m==='fist'?'鲁智深挥拳砸向镇关西！（'+fist+'/3 拳）':'鲁智深飞起一脚踹中镇关西！（'+kick+'/2 脚）');
-      if(!done&&BOSSHP-FIST*fist-KICK*kick<=0)log('镇关西满脸是血，还强撑着一口气！');
-    }else{
-      t.hp=Math.max(0,t.hp-d);hit(t,d);
-      log('鲁智深一'+nm+'打中'+t.n+(t.hp?'。':'，'+t.n+'倒地不起！'));
-    }
-    ui();
-    if(U[1].hp<=0)return setTimeout(()=>finish(true),700);
-    setTimeout(endPlayer,600);
-  },250);
-}
-function endPlayer(){
-  if(phase!=='player')return;
-  phase='enemy';busy=true;mode=null;range={};ui();
-  $('tip').textContent='敌人行动中……';
-  const es=alive(1);let i=0;
-  const next=()=>{
-    if(i>=es.length)return setTimeout(()=>{busy=false;if(U[0].hp>0)startTurn()},300);
-    const e=es[i++];if(e.hp<=0)return next();
-    const L=U[0];
-    if(!adj(e,L)){
-      const d=reach(e,3);let best=null,bs=1e9;
-      for(const k in d){const [a,b]=k.split(',').map(Number),s=(Math.abs(a-L.x)+Math.abs(b-L.y))*10+d[k];if(s<bs){bs=s;best=[a,b]}}
-      if(best){e.x=best[0];e.y=best[1]}
-    }
-    setTimeout(()=>{
-      if(adj(e,L)){
-        e.lunge={x:L.x-e.x,y:L.y-e.y,f:10};
-        setTimeout(()=>{L.hp=Math.max(0,L.hp-e.dmg);hit(L,e.dmg);
-          log(e.n+(e.boss?'抡起剔骨尖刀砍向鲁智深':'挥拳打向鲁智深')+'，损失'+e.dmg+'点体力。');ui();
-          if(L.hp<=0)return setTimeout(()=>finish(false),700);
-          setTimeout(next,500)},250);
-      }else setTimeout(next,350);
-    },450);
-  };
-  setTimeout(next,400);
-}
-function finish(win){
-  phase='end';ui();
-  $('ov').classList.remove('hide');
-  $('ovb').innerHTML=win?
-   '<h2>胜　利</h2><p>三拳两脚之下，镇关西直挺挺躺在地上，再无动静。</p><p>鲁提辖见出了人命，丢下一句狠话，转身离开了渭州城……</p><p><b>通关评价：</b>'+turnsTxt()+'</p><button onclick="start()">再战一次</button>':
-   '<h2>败　北</h2><p>鲁智深体力不支，倒在了市集之中。</p><button onclick="start()">重新挑战</button>';
-}
-let turns=0;function turnsTxt(){return '拳 '+fist+' 脚 '+kick+'，替天行道，路见不平拔拳相助！'}
-function start(){$('ov').classList.add('hide');init()}
-function intro(){
-  $('ovb').innerHTML='<h2>鲁提辖拳打镇关西</h2>'+
-  '<p>渭州市集。卖肉的郑屠人称“镇关西”，霸占金翠莲，又逼她父女偿还虚钱。提辖鲁达听闻，怒火中烧，直奔肉铺而来。</p>'+
-  '<p><b>目标：</b>以 <b>3 拳 + 2 脚</b> 击倒镇关西。<br><b>操作：</b>点击蓝色格子移动 → 选“拳击”或“脚踢” → 点击相邻敌人。伙计会拦路，镇关西也会还手，留意体力！</p>'+
-  '<button onclick="start()">开　战</button>';
+ }else if(S.view==="folder"&&c){
+  h+='<div class="path"><button class="back" data-a="home" aria-label="返回">‹</button><h1>'+esc(c.icon)+' '+esc(c.name)+'</h1>'+editBtn()+'</div>';
+  if(S.edit)h+='<p class="hint">点入口可修改或删除</p>';
+  h+='<div class="grid'+(S.edit?' edit':'')+'">';
+  c.items.forEach(function(it){h+='<button class="tile" data-a="'+(S.edit?'editItem':'open')+'" data-c="'+c.id+'" data-i="'+it.id+'"><i style="background:'+COLORS[c.color]+'">'+esc(it.icon)+'</i><span>'+esc(it.name)+'</span></button>'});
+  if(S.edit||!c.items.length)h+='<button class="tile add" data-a="newItem" data-c="'+c.id+'"><i>＋</i><span>添加入口</span></button>';
+  h+='</div>';
+ }else if(S.view==="pager"){
+  h+='<div class="path"><button class="back" data-a="back" aria-label="返回">‹</button><h1>📟 传呼机</h1></div><div class="lcd" id="lcd">';
+  msgs.forEach(function(m){h+='<div class="msg'+(m.from==="me"?' me':'')+'"><div class="m">'+esc(m.from==="me"?"我":m.from)+' '+hm(m.t)+'</div><div class="t">'+esc(m.text)+'</div></div>'});
+  h+='</div><div class="send"><input id="mt" placeholder="输入要发送的信息" maxlength="200" autocomplete="off"><button data-a="send">发送</button></div>'
+   +'<div class="sub"><button data-a="fake">模拟收到设备消息</button><button data-a="clearMsg">清空记录</button></div>'
+   +'<p class="hint" style="margin-top:12px">目前消息只保存在本机。接入云端后，ESP32 推送的内容会显示在这里。</p>';
+ }
+ if(S.sheet)h+=sheetHtml();
+ a.innerHTML=h;
+ var l=document.getElementById("lcd");if(l)l.scrollTop=l.scrollHeight;
 }
 
-/* ---------- render ---------- */
-function rr(x,y,w,h,c){g.fillStyle=c;g.fillRect(x,y,w,h)}
-function draw(){
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    rr(x*T,y*T,T,T,(x+y)%2?'#a8966d':'#b3a278');
-    if(y===3||y===4)rr(x*T,y*T,T,T,(x+y)%2?'#c2b389':'#cbbd95');
-    g.strokeStyle='rgba(60,40,10,.15)';g.strokeRect(x*T,y*T,T,T);
-  }
-  for(const k in OBS){
-    const [x,y]=k.split(',').map(Number),c=OBS[k],px=x*T,py=y*T;
-    const col={摊:'#7a3b22',箱:'#6a4e2a',肉:'#8c2a22',井:'#5d6568',树:'#3d5a35'}[c];
-    if(c==='井'||c==='树'){g.fillStyle=col;g.beginPath();g.arc(px+30,py+30,24,0,7);g.fill()}
-    else{rr(px+3,py+6,T-6,T-14,col);rr(px+3,py+6,T-6,10,c==='肉'?'#e9dcc0':'#c9b27a')}
-    g.fillStyle='#f3e6c4';g.font='bold 20px serif';g.textAlign='center';g.fillText(c==='树'?'':c,px+30,py+42);
-  }
-  g.font='bold 16px serif';g.fillStyle='rgba(60,20,10,.55)';g.fillText('郑家肉铺',10.5*T+0,0.75*T);
-  if(phase==='player'&&!busy){
-    for(const k in range){const [x,y]=k.split(',').map(Number);if(range[k]>0)rr(x*T+2,y*T+2,T-4,T-4,'rgba(50,110,200,.38)')}
-    if(mode)for(const e of alive(1))if(adj(U[0],e)){g.strokeStyle='#f33';g.lineWidth=4;g.strokeRect(e.x*T+3,e.y*T+3,T-6,T-6);g.lineWidth=1}
-  }
-  for(const u of alive()){
-    let px=u.x*T+30,py=u.y*T+28;
-    if(u.lunge){const f=u.lunge.f--;const s=Math.sin(f/10*Math.PI)*14;px+=u.lunge.x*s;py+=u.lunge.y*s;if(f<=0)u.lunge=null}
-    if(u.flash){u.flash--;px+=(u.flash%2?4:-4)}
-    g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(px,py+22,20,7,0,0,7);g.fill();
-    g.fillStyle=u.flash?'#fff':u.col;g.beginPath();g.arc(px,py,u.boss?25:22,0,7);g.fill();
-    g.strokeStyle=u.side?'#300':'#e9d28a';g.lineWidth=3;g.stroke();g.lineWidth=1;
-    g.fillStyle='#f3e6c4';g.font='bold '+(u.boss?28:24)+'px "KaiTi","STKaiti",serif';g.fillText(u.c,px,py+9);
-    rr(u.x*T+8,u.y*T+52,44,5,'#000');rr(u.x*T+8,u.y*T+52,44*u.hp/u.max,5,u.side?'#d44':'#4c9');
-  }
-  for(const f of fx){f.y-=.6;f.life--;g.globalAlpha=Math.min(1,f.life/20);
-    g.font='bold 22px serif';g.fillStyle='#000';g.fillText(f.t,f.x+1,f.y+1);g.fillStyle='#ff5a3c';g.fillText(f.t,f.x,f.y);g.globalAlpha=1}
-  fx=fx.filter(f=>f.life>0);
+function sheetHtml(){
+ if(S.sheet.misc)return miscSheet(S.sheet);
+ var s=S.sheet,h='<div class="mask" data-a="closeSheet"><div class="sheet" data-stop="1"><h2>'+esc(s.title)+'</h2>';
+ h+='<label>名称</label><input id="f_name" maxlength="12" value="'+esc(s.name)+'">';
+ h+='<label>图标（输入一个表情符号）</label><input id="f_icon" maxlength="4" value="'+esc(s.icon)+'">';
+ if(s.kind==="cat"){
+  h+='<label>颜色</label><div class="sw">';
+  COLORS.forEach(function(c,i){h+='<button type="button" class="'+(i===s.color?'sel':'')+'" style="background:'+c+'" data-a="pickColor" data-v="'+i+'" aria-label="颜色'+(i+1)+'"></button>'});
+  h+='</div>';
+ }else{
+  h+='<label>类型</label><select id="f_type"><option value="link"'+(s.type==="link"?' selected':'')+'>链接 / 页面</option><option value="pager"'+(s.type==="pager"?' selected':'')+'>传呼机（站内）</option></select>';
+  h+='<label>链接地址（留空则提示“待开发”）</label><input id="f_url" inputmode="url" placeholder="https://" value="'+esc(s.url)+'">';
+ }
+ h+='<div class="acts">';
+ if(s.id)h+='<button class="del" data-a="del">删除</button>';
+ h+='<button data-a="closeSheet">取消</button><button class="ok" data-a="saveSheet">保存</button></div></div></div>';
+ return h;
 }
-(function loop(){if(U)draw();requestAnimationFrame(loop)})();
-U=[{hp:0}];U=null;init();$('ov').classList.remove('hide');intro();
+function val(id){var e=document.getElementById(id);return e?e.value.trim():""}
+function readSheet(){var s=S.sheet;s.name=val("f_name");s.icon=val("f_icon");if(s.kind==="item"){s.url=val("f_url");s.type=val("f_type")||"link"}}
+
+document.addEventListener("click",function(e){
+ var t=e.target.closest("[data-a]");if(!t)return;
+ if(t.classList.contains("mask")&&e.target.closest("[data-stop]"))return;
+ var a=t.dataset.a,C=t.dataset.c,I=t.dataset.i;
+ if(!admin&&/^(toggleEdit|newCat|editCat|newItem|editItem|saveSheet|del)$/.test(a))return;
+ if(a==="toggleEdit"){S.edit=!S.edit}
+ else if(a==="home"){S.view="home";S.cat=null;S.edit=false}
+ else if(a==="back"){S.view=S.cat?"folder":"home"}
+ else if(a==="openCat"){S.view="folder";S.cat=C;S.edit=false}
+ else if(a==="open"){var cc=findCat(C),it=cc.items.filter(function(x){return x.id===I})[0];
+  if(it.type==="pager"){if(!admin){toast("传呼机仅主人可用");return}S.cat=C;S.view="pager"}
+  else if(it.url){window.open(it.url,"_blank","noopener")}
+  else{toast("「"+it.name+"」还在开发中");return}}
+ else if(a==="newCat"){S.sheet={kind:"cat",title:"新建分类",name:"",icon:"📁",color:0}}
+ else if(a==="editCat"){var k=findCat(C);S.sheet={kind:"cat",title:"编辑分类",id:k.id,name:k.name,icon:k.icon,color:k.color}}
+ else if(a==="newItem"){S.sheet={kind:"item",title:"添加入口",cat:C,name:"",icon:"✨",url:"",type:"link"}}
+ else if(a==="editItem"){var c2=findCat(C),i2=c2.items.filter(function(x){return x.id===I})[0];S.sheet={kind:"item",title:"编辑入口",id:i2.id,cat:C,name:i2.name,icon:i2.icon,url:i2.url,type:i2.type}}
+ else if(a==="pickColor"){readSheet();S.sheet.color=+t.dataset.v}
+ else if(a==="closeSheet"){S.sheet=null}
+ else if(a==="saveSheet"){readSheet();var s=S.sheet;
+  if(!s.name){toast("请先填写名称");return}
+  s.icon=s.icon||"📄";
+  if(s.kind==="cat"){
+   if(s.id){var k2=findCat(s.id);k2.name=s.name;k2.icon=s.icon;k2.color=s.color}
+   else cats.push({id:uid(),name:s.name,icon:s.icon,color:s.color,items:[]});
+  }else{
+   var cat=findCat(s.cat);
+   if(s.id){var o=cat.items.filter(function(x){return x.id===s.id})[0];o.name=s.name;o.icon=s.icon;o.url=s.url;o.type=s.type}
+   else cat.items.push({id:uid(),name:s.name,icon:s.icon,url:s.url,type:s.type});
+  }
+  persist();S.sheet=null;toast("已保存")}
+ else if(a==="del"){
+  if(!t.classList.contains("sure")){t.classList.add("sure");t.textContent="再点一次确认";return}
+  var s2=S.sheet;
+  if(s2.kind==="cat")cats=cats.filter(function(x){return x.id!==s2.id});
+  else{var c3=findCat(s2.cat);c3.items=c3.items.filter(function(x){return x.id!==s2.id})}
+  persist();S.sheet=null;toast("已删除")}
+ else if(a==="doUnlock"){sha(val("f_pw")).then(function(h){if(h&&h===PASS_HASH){admin=true;save(AK,true);cats=load(KEY,null)||clone(cats);S.sheet=null;render();toast("已进入管理模式")}else toast(h?"口令不对":"需要 https 才能验证口令")});return}
+ else if(a==="logout"){admin=false;save(AK,false);S.edit=false;cats=clone(PUBLISHED||defaults())}
+ else if(a==="resetPub"){cats=clone(PUBLISHED||defaults());persist();toast("已恢复为已发布版本")}
+ else if(a==="exportCfg"){S.sheet={misc:"export",title:"导出配置",json:JSON.stringify(cats)}}
+ else if(a==="copyJson"){var js=S.sheet.json;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(js).then(function(){toast("已复制")},function(){toast("请长按文本框手动复制")})}else toast("请长按文本框手动复制");return}
+ else if(a==="newPass"){S.sheet={misc:"newpass",title:"修改口令"}}
+ else if(a==="doNewPass"){var pw=val("f_pw");if(!pw){toast("请输入新口令");return}sha(pw).then(function(h){S.sheet.hash=h;render()});return}
+ else if(a==="send"){var inp=document.getElementById("mt"),v=inp.value.trim();if(!v)return;
+  msgs.push({from:"me",text:v,t:Date.now()});save(PK,msgs)}
+ else if(a==="fake"){msgs.push({from:"ESP32",text:"温度 26.4℃ 湿度 61%",t:Date.now()});save(PK,msgs)}
+ else if(a==="clearMsg"){msgs=[];save(PK,msgs)}
+ render();
+});
+document.addEventListener("input",function(e){
+ if(e.target.id==="q"){S.q=e.target.value;var p=e.target.selectionStart;render();var q=document.getElementById("q");q.focus();q.setSelectionRange(p,p)}
+});
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.id==="mt"){e.preventDefault();var b=document.querySelector('[data-a="send"]');if(b)b.click()}});
+setInterval(function(){var c=document.getElementById("clk");if(c)c.textContent=hm(Date.now())},20000);
+var lp;document.addEventListener("pointerdown",function(e){if(admin||!e.target.closest("#clk"))return;lp=setTimeout(function(){S.sheet={misc:"pass",title:"主人登录"};render()},800)});
+["pointerup","pointercancel"].forEach(function(n){document.addEventListener(n,function(){clearTimeout(lp)})});
+if(location.hash==="#admin"&&!admin)S.sheet={misc:"pass",title:"主人登录"};
+render();
 </script>
 </body>
 </html>
