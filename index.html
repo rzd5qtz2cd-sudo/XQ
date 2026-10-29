@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>我的主页</title>
+<style>
+:root{--bg:#e9edf1;--sf:#fff;--ink:#12202b;--sub:#6b7a88;--line:#d5dce3;--ac:#2f5bea;--lcd:#b9c79a;--lcdi:#25301a;--shadow:0 1px 0 rgba(18,32,43,.06);
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10171d;--sf:#1a242d;--ink:#e8eef3;--sub:#8b9aa8;--line:#2a3743;--ac:#6f8cff;--lcd:#7f8f63;--lcdi:#141b0d}}
+:root[data-theme="dark"]{--bg:#10171d;--sf:#1a242d;--ink:#e8eef3;--sub:#8b9aa8;--line:#2a3743;--ac:#6f8cff;--lcd:#7f8f63;--lcdi:#141b0d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+#app{max-width:560px;margin:0 auto;padding:16px 16px 96px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 0 14px}
+.clock{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-size:46px;font-weight:700;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums}
+.date{color:var(--sub);font-size:14px;margin-top:6px}
+.pill{height:40px;padding:0 16px;border-radius:20px;background:var(--sf);border:1px solid var(--line);font-weight:600;font-size:14px}
+.pill.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.search{width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--sf);padding:0 16px;margin-bottom:18px;outline:none}
+.search:focus,.pill:focus-visible,.tile:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.path{display:flex;align-items:center;gap:10px;margin:8px 0 18px}
+.back{width:44px;height:44px;border-radius:14px;background:var(--sf);border:1px solid var(--line);font-size:20px}
+.path h1{font-size:22px;margin:0;flex:1}
+.hint{color:var(--sub);font-size:13px;margin:0 2px 10px}
+.folders{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.folder{position:relative;min-height:132px;border-radius:24px 24px 24px 8px;padding:14px;text-align:left;color:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.folder:before{content:"";position:absolute;right:-18px;top:-18px;width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.14)}
+.folder .ic{font-size:34px;line-height:1}
+.folder b{display:block;font-size:18px}
+.folder small{opacity:.85;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 10px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;padding:0;min-width:0}
+.tile i{font-style:normal;width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:30px;color:#fff}
+.tile span{font-size:13px;line-height:1.25;max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
+.add i{background:transparent!important;border:2px dashed var(--sub);color:var(--sub);font-size:26px}
+.add span{color:var(--sub)}
+.edit .folder,.edit .tile:not(.add) i{animation:wob .45s ease-in-out infinite alternate}
+.edit .folder:nth-child(2n),.edit .tile:nth-child(2n) i{animation-delay:.2s}
+@keyframes wob{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
+@media(prefers-reduced-motion:reduce){.edit .folder,.edit .tile i{animation:none}}
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--sf);border:1px solid var(--line);border-radius:14px;text-align:left}
+.row i{font-style:normal;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:20px}
+.row small{color:var(--sub);display:block;font-size:12px}
+.empty{color:var(--sub);text-align:center;padding:40px 0}
+/* pager */
+.lcd{background:var(--lcd);color:var(--lcdi);border-radius:20px;border:3px solid var(--ink);padding:12px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;min-height:340px;max-height:56vh;overflow:auto;box-shadow:inset 0 2px 6px rgba(0,0,0,.25)}
+.msg{padding:8px 0;border-bottom:1px dashed rgba(0,0,0,.3)}
+.msg:last-child{border:0}
+.msg .m{font-size:12px;opacity:.75}
+.msg .t{font-size:16px;word-break:break-all}
+.msg .r{display:flex;gap:8px;align-items:flex-start}
+.msg .r .t{flex:1;min-width:0}
+.msg .x{flex:none;font-size:12px;padding:3px 9px;border-radius:8px;border:1px solid rgba(0,0,0,.45);color:var(--lcdi)}
+.msg .x.sure{background:#e5533f;color:#fff;border-color:#e5533f}
+.more{width:100%;height:38px;margin-top:8px;border-radius:10px;border:1px solid rgba(0,0,0,.35);color:var(--lcdi);font-size:13px}
+.send{display:flex;gap:8px;margin-top:12px}
+.send input{flex:1;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--sf);padding:0 14px;outline:none}
+.send button{height:48px;padding:0 20px;border-radius:14px;background:var(--ac);color:#fff;font-weight:700}
+.sub{display:flex;gap:8px;margin-top:10px}
+.sub button{flex:1;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--sf);font-size:13px;color:var(--sub)}
+/* sheet */
+.mask{position:fixed;inset:0;background:rgba(10,18,26,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{width:100%;max-width:560px;background:var(--sf);border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sheet h2{margin:0 0 14px;font-size:18px}
+.sheet label{display:block;font-size:13px;color:var(--sub);margin:12px 0 4px}
+.sheet input,.sheet select{width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:0 12px;outline:none}
+.sw{display:flex;gap:10px;flex-wrap:wrap}
+.sw button{width:36px;height:36px;border-radius:50%;border:3px solid transparent}
+.sw button.sel{border-color:var(--ink)}
+.acts{display:flex;gap:10px;margin-top:20px}
+.acts button{flex:1;height:48px;border-radius:14px;font-weight:700;border:1px solid var(--line)}
+.acts .ok{background:var(--ac);color:#fff;border-color:var(--ac)}
+.acts .del{color:#d83a2e}
+.acts .del.sure{background:#d83a2e;color:#fff;border-color:#d83a2e}
+.toast{position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:20px;font-size:14px;z-index:30}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+var COLORS=["#2f5bea","#0f9d8a","#e8921a","#e5533f","#7a4bd6","#3a4652"];
+var KEY="myhome.v1",PK="myhome.pager";
+// 传呼机接口（Cloudflare Pages Functions，同域）
+var PAGER_API="/api/pager";
+function uid(){return Math.random().toString(36).slice(2,9)}
+function defaults(){return[
+ {id:uid(),name:"小工具",icon:"🧰",color:0,items:[
+  {id:uid(),name:"调研问卷",icon:"📋",url:"",type:"link"},
+  {id:uid(),name:"文字转语音",icon:"🔊",url:"",type:"link"}]},
+ {id:uid(),name:"通讯",icon:"📟",color:1,items:[
+  {id:uid(),name:"传呼机",icon:"📟",url:"",type:"pager"}]},
+ {id:uid(),name:"小游戏",icon:"🎮",color:2,items:[
+  {id:uid(),name:"我的第一个游戏",icon:"🕹️",url:"",type:"link"}]}]}
+function load(k,d){try{var v=localStorage.getItem(k);if(v)return JSON.parse(v)}catch(e){}return d}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var AK="myhome.admin";
+// 已发布的内容：在管理模式点“导出配置”，把得到的JSON粘贴替换下面的 null，访客看到的就是它
+var PUBLISHED=null;
+// 管理口令的哈希（默认口令 1234，进入管理后点“改口令”生成新的并替换这里）
+var PASS_HASH="b3b955fb4f06f57176f6a52b91d282494e8e737d7e76e61a02b3b96f2df96f68";
+var admin=load(AK,false)===true;
+function clone(o){return JSON.parse(JSON.stringify(o))}
+var cats=admin?(load(KEY,null)||clone(PUBLISHED||defaults())):clone(PUBLISHED||defaults());
+function sha(s){if(!(window.crypto&&crypto.subtle))return Promise.resolve("");return crypto.subtle.digest("SHA-256",new TextEncoder().encode("myhome:"+s)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")})}
+function editBtn(){return admin?'<button class="pill'+(S.edit?' on':'')+'" data-a="toggleEdit">'+(S.edit?'完成':'编辑')+'</button>':''}
+function adminBar(){return '<div class="sub" style="margin:-6px 0 16px"><button data-a="exportCfg">导出配置</button><button data-a="newPass">改口令</button><button data-a="resetPub">恢复已发布</button><button data-a="logout">退出管理</button></div>'}
+function miscSheet(s){
+ var h='<div class="mask" data-a="closeSheet"><div class="sheet" data-stop="1"><h2>'+esc(s.title)+'</h2>';
+ if(s.misc==="pass")h+='<label>管理口令</label><input id="f_pw" type="password" autocomplete="current-password"><div class="acts"><button data-a="closeSheet">取消</button><button class="ok" data-a="doUnlock">进入管理</button></div>';
+ else if(s.misc==="newpass")h+='<label>新口令</label><input id="f_pw" type="text"><div class="acts"><button data-a="closeSheet">取消</button><button class="ok" data-a="doNewPass">生成</button></div>'+(s.hash?'<label>把这串替换文件里的 PASS_HASH 的值</label><input readonly value="'+s.hash+'" onclick="this.select()">':'');
+ else if(s.misc==="export")h+='<label>复制后，替换 index.html 里 var PUBLISHED=null; 中的 null</label><textarea readonly style="width:100%;height:200px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:10px;font:12px ui-monospace,monospace">'+esc(s.json)+'</textarea><div class="acts"><button data-a="closeSheet">关闭</button><button class="ok" data-a="copyJson">复制</button></div>';
+ return h+'</div></div>';
+}
+var PGK="myhome.pgpw";
+var PG={pw:load(PGK,""),list:[],more:false,err:"",st:"",busy:false};
+function pad2(n){return String(n).padStart(2,"0")}
+function fdt(ts){var d=new Date(ts*1000);return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+" "+pad2(d.getHours())+":"+pad2(d.getMinutes())}
+function pgApi(method,path,body){
+ var hd={"X-Admin-Password":encodeURIComponent(PG.pw)};if(body)hd["Content-Type"]="application/json";
+ return fetch(PAGER_API+path,{method:method,headers:hd,body:body?JSON.stringify(body):undefined,cache:"no-store"}).then(function(r){
+  if(r.status===401)throw new Error("auth");
+  return r.json().then(function(j){if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j})})}
+function pgListHtml(){
+ if(!PG.list.length)return '<div class="empty">'+(PG.st?"还没有消息":"加载中…")+'</div>';
+ var h="";PG.list.forEach(function(m){h+='<div class="msg"><div class="m">'+fdt(m.ts)+'</div><div class="r"><div class="t">'+esc(m.text)+'</div><button class="x" data-a="pgdel" data-id="'+m.id+'">删除</button></div></div>'});
+ if(PG.more)h+='<button class="more" data-a="pgmore">加载更多</button>';
+ return h}
+function pgPaint(){var l=document.getElementById("plist");if(l)l.innerHTML=pgListHtml();var s=document.getElementById("pgst");if(s)s.textContent=PG.err||PG.st}
+function pgCount(){var i=document.getElementById("mt"),c=document.getElementById("pgc");if(i&&c)c.textContent=Array.from(i.value).length+"/100"}
+function pgLoad(more){
+ if(!PG.pw||PG.busy)return;PG.busy=true;
+ var lim=more?50:Math.min(200,Math.max(50,PG.list.length));
+ var path="/messages?limit="+lim+(more&&PG.list.length?"&before="+PG.list[PG.list.length-1].id:"");
+ pgApi("GET",path).then(function(j){
+  PG.list=more?PG.list.concat(j.messages):j.messages;PG.more=!!j.more;PG.err="";
+  var d=new Date();PG.st="已同步 "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());pgPaint()
+ }).catch(function(e){
+  if(e.message==="auth"){PG.pw="";save(PGK,"");PG.err="密码不对";PG.busy=false;render();return}
+  PG.err="网络错误，稍后自动重试";pgPaint()
+ }).then(function(){PG.busy=false})}
+function pgSend(){
+ var inp=document.getElementById("mt");if(!inp)return;
+ var v=inp.value.replace(/\s+/g," ").trim();if(!v)return;
+ if(Array.from(v).length>100){toast("最多100个字符");return}
+ var btn=document.querySelector('[data-a="send"]');if(btn)btn.disabled=true;
+ pgApi("POST","/messages",{text:v}).then(function(){inp.value="";pgCount();toast("已发送");PG.busy=false;pgLoad()})
+ .catch(function(e){toast(e.message==="auth"?"密码不对":"发送失败："+e.message)})
+ .then(function(){if(btn)btn.disabled=false})}
+function pgOnRender(){if(S.view==="pager"&&PG.pw){pgCount();pgLoad()}}
+var S={view:"home",cat:null,edit:false,q:"",sheet:null};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function hm(t){var d=new Date(t);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function findCat(id){return cats.filter(function(c){return c.id===id})[0]}
+function persist(){if(admin)save(KEY,cats)}
+function toast(m){var e=document.createElement("div");e.className="toast";e.textContent=m;document.body.appendChild(e);setTimeout(function(){e.remove()},1800)}
+
+function render(){
+ var a=document.getElementById("app"),h="";
+ var c=S.cat?findCat(S.cat):null;
+ if(S.view==="home"){
+  var d=new Date(),w="日一二三四五六"[d.getDay()];
+  h+='<div class="top"><div><div class="clock" id="clk">'+hm(d)+'</div><div class="date">'+(d.getMonth()+1)+'月'+d.getDate()+'日 星期'+w+'</div></div>'
+   +editBtn()+'</div>'
+   +'<input class="search" id="q" placeholder="搜索所有入口" value="'+esc(S.q)+'" autocomplete="off">'+(admin?adminBar():'');
+  if(S.q){
+   var r="";cats.forEach(function(cc){cc.items.forEach(function(it){
+    if((it.name+cc.name).toLowerCase().indexOf(S.q.toLowerCase())>-1)
+     r+='<button class="row" data-a="open" data-c="'+cc.id+'" data-i="'+it.id+'"><i style="background:'+COLORS[cc.color]+'">'+esc(it.icon)+'</i><div><b>'+esc(it.name)+'</b><small>'+esc(cc.name)+'</small></div></button>'})});
+   h+=r?'<div class="rows">'+r+'</div>':'<div class="empty">没有找到匹配的入口</div>';
+  }else{
+   if(S.edit)h+='<p class="hint">点任意分类即可修改或删除</p>';
+   h+='<div class="folders'+(S.edit?' edit':'')+'">';
+   cats.forEach(function(cc){h+='<button class="folder" style="background:'+COLORS[cc.color]+'" data-a="'+(S.edit?'editCat':'openCat')+'" data-c="'+cc.id+'"><span class="ic">'+esc(cc.icon)+'</span><span><b>'+esc(cc.name)+'</b><small>'+cc.items.length+' 个入口</small></span></button>'});
+   if(S.edit)h+='<button class="folder" style="background:var(--sf);color:var(--sub);border:2px dashed var(--sub);animation:none" data-a="newCat"><span class="ic">＋</span><span><b>新建分类</b></span></button>';
+   h+='</div>';
+   if(!cats.length)h+='<div class="empty">还没有分类，点右上角“编辑”添加</div>';
+  }
+ }else if(S.view==="folder"&&c){
+  h+='<div class="path"><button class="back" data-a="home" aria-label="返回">‹</button><h1>'+esc(c.icon)+' '+esc(c.name)+'</h1>'+editBtn()+'</div>';
+  if(S.edit)h+='<p class="hint">点入口可修改或删除</p>';
+  h+='<div class="grid'+(S.edit?' edit':'')+'">';
+  c.items.forEach(function(it){h+='<button class="tile" data-a="'+(S.edit?'editItem':'open')+'" data-c="'+c.id+'" data-i="'+it.id+'"><i style="background:'+COLORS[c.color]+'">'+esc(it.icon)+'</i><span>'+esc(it.name)+'</span></button>'});
+  if(S.edit||!c.items.length)h+='<button class="tile add" data-a="newItem" data-c="'+c.id+'"><i>＋</i><span>添加入口</span></button>';
+  h+='</div>';
+ }else if(S.view==="pager"){
+  h+='<div class="path"><button class="back" data-a="back" aria-label="返回">‹</button><h1>📟 传呼机</h1>'+(PG.pw?'<button class="pill" data-a="pglogout">锁定</button>':'')+'</div>';
+  if(!PG.pw){
+   h+='<div class="send" style="margin-top:0"><input id="pg_pw" type="password" autocomplete="current-password" placeholder="传呼机密码"><button data-a="pgunlock">进入</button></div>'
+    +(PG.err?'<p class="hint" style="color:#e5533f;margin-top:10px">'+esc(PG.err)+'</p>':'');
+  }else{
+   h+='<div class="send" style="margin:0 0 6px"><input id="mt" placeholder="发给传呼机的新信息（最多100字）" maxlength="100" autocomplete="off"><button data-a="send">发送</button></div>'
+    +'<p class="hint" style="display:flex;justify-content:space-between;margin-bottom:8px"><span id="pgst">'+esc(PG.err||PG.st)+'</span><span id="pgc">0/100</span></p>'
+    +'<div class="lcd" id="lcd"><div id="plist">'+pgListHtml()+'</div></div>';
+  }
+ }
+ if(S.sheet)h+=sheetHtml();
+ a.innerHTML=h;
+ pgOnRender();
+}
+
+function sheetHtml(){
+ if(S.sheet.misc)return miscSheet(S.sheet);
+ var s=S.sheet,h='<div class="mask" data-a="closeSheet"><div class="sheet" data-stop="1"><h2>'+esc(s.title)+'</h2>';
+ h+='<label>名称</label><input id="f_name" maxlength="12" value="'+esc(s.name)+'">';
+ h+='<label>图标（输入一个表情符号）</label><input id="f_icon" maxlength="4" value="'+esc(s.icon)+'">';
+ if(s.kind==="cat"){
+  h+='<label>颜色</label><div class="sw">';
+  COLORS.forEach(function(c,i){h+='<button type="button" class="'+(i===s.color?'sel':'')+'" style="background:'+c+'" data-a="pickColor" data-v="'+i+'" aria-label="颜色'+(i+1)+'"></button>'});
+  h+='</div>';
+ }else{
+  h+='<label>类型</label><select id="f_type"><option value="link"'+(s.type==="link"?' selected':'')+'>链接 / 页面</option><option value="pager"'+(s.type==="pager"?' selected':'')+'>传呼机（站内）</option></select>';
+  h+='<label>链接地址（留空则提示“待开发”）</label><input id="f_url" inputmode="url" placeholder="https://" value="'+esc(s.url)+'">';
+ }
+ h+='<div class="acts">';
+ if(s.id)h+='<button class="del" data-a="del">删除</button>';
+ h+='<button data-a="closeSheet">取消</button><button class="ok" data-a="saveSheet">保存</button></div></div></div>';
+ return h;
+}
+function val(id){var e=document.getElementById(id);return e?e.value.trim():""}
+function readSheet(){var s=S.sheet;s.name=val("f_name");s.icon=val("f_icon");if(s.kind==="item"){s.url=val("f_url");s.type=val("f_type")||"link"}}
+
+document.addEventListener("click",function(e){
+ var t=e.target.closest("[data-a]");if(!t)return;
+ if(t.classList.contains("mask")&&e.target.closest("[data-stop]"))return;
+ var a=t.dataset.a,C=t.dataset.c,I=t.dataset.i;
+ if(!admin&&/^(toggleEdit|newCat|editCat|newItem|editItem|saveSheet|del)$/.test(a))return;
+ if(a==="toggleEdit"){S.edit=!S.edit}
+ else if(a==="home"){S.view="home";S.cat=null;S.edit=false}
+ else if(a==="back"){S.view=S.cat?"folder":"home"}
+ else if(a==="openCat"){S.view="folder";S.cat=C;S.edit=false}
+ else if(a==="open"){var cc=findCat(C),it=cc.items.filter(function(x){return x.id===I})[0];
+  if(it.type==="pager"){if(!admin){toast("传呼机仅主人可用");return}S.cat=C;S.view="pager"}
+  else if(it.url){window.open(it.url,"_blank","noopener")}
+  else{toast("「"+it.name+"」还在开发中");return}}
+ else if(a==="newCat"){S.sheet={kind:"cat",title:"新建分类",name:"",icon:"📁",color:0}}
+ else if(a==="editCat"){var k=findCat(C);S.sheet={kind:"cat",title:"编辑分类",id:k.id,name:k.name,icon:k.icon,color:k.color}}
+ else if(a==="newItem"){S.sheet={kind:"item",title:"添加入口",cat:C,name:"",icon:"✨",url:"",type:"link"}}
+ else if(a==="editItem"){var c2=findCat(C),i2=c2.items.filter(function(x){return x.id===I})[0];S.sheet={kind:"item",title:"编辑入口",id:i2.id,cat:C,name:i2.name,icon:i2.icon,url:i2.url,type:i2.type}}
+ else if(a==="pickColor"){readSheet();S.sheet.color=+t.dataset.v}
+ else if(a==="closeSheet"){S.sheet=null}
+ else if(a==="saveSheet"){readSheet();var s=S.sheet;
+  if(!s.name){toast("请先填写名称");return}
+  s.icon=s.icon||"📄";
+  if(s.kind==="cat"){
+   if(s.id){var k2=findCat(s.id);k2.name=s.name;k2.icon=s.icon;k2.color=s.color}
+   else cats.push({id:uid(),name:s.name,icon:s.icon,color:s.color,items:[]});
+  }else{
+   var cat=findCat(s.cat);
+   if(s.id){var o=cat.items.filter(function(x){return x.id===s.id})[0];o.name=s.name;o.icon=s.icon;o.url=s.url;o.type=s.type}
+   else cat.items.push({id:uid(),name:s.name,icon:s.icon,url:s.url,type:s.type});
+  }
+  persist();S.sheet=null;toast("已保存")}
+ else if(a==="del"){
+  if(!t.classList.contains("sure")){t.classList.add("sure");t.textContent="再点一次确认";return}
+  var s2=S.sheet;
+  if(s2.kind==="cat")cats=cats.filter(function(x){return x.id!==s2.id});
+  else{var c3=findCat(s2.cat);c3.items=c3.items.filter(function(x){return x.id!==s2.id})}
+  persist();S.sheet=null;toast("已删除")}
+ else if(a==="doUnlock"){sha(val("f_pw")).then(function(h){if(h&&h===PASS_HASH){admin=true;save(AK,true);cats=load(KEY,null)||clone(cats);S.sheet=null;render();toast("已进入管理模式")}else toast(h?"口令不对":"需要 https 才能验证口令")});return}
+ else if(a==="logout"){admin=false;save(AK,false);S.edit=false;cats=clone(PUBLISHED||defaults())}
+ else if(a==="resetPub"){cats=clone(PUBLISHED||defaults());persist();toast("已恢复为已发布版本")}
+ else if(a==="exportCfg"){S.sheet={misc:"export",title:"导出配置",json:JSON.stringify(cats)}}
+ else if(a==="copyJson"){var js=S.sheet.json;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(js).then(function(){toast("已复制")},function(){toast("请长按文本框手动复制")})}else toast("请长按文本框手动复制");return}
+ else if(a==="newPass"){S.sheet={misc:"newpass",title:"修改口令"}}
+ else if(a==="doNewPass"){var pw=val("f_pw");if(!pw){toast("请输入新口令");return}sha(pw).then(function(h){S.sheet.hash=h;render()});return}
+ else if(a==="send"){pgSend();return}
+ else if(a==="pgunlock"){var pv=val("pg_pw");if(!pv)return;PG.pw=pv;PG.err="";PG.st="";save(PGK,pv)}
+ else if(a==="pglogout"){PG.pw="";PG.list=[];PG.st="";save(PGK,"")}
+ else if(a==="pgmore"){pgLoad(true);return}
+ else if(a==="pgdel"){
+  if(!t.classList.contains("sure")){t.classList.add("sure");t.textContent="确认?";setTimeout(function(){if(t.isConnected){t.classList.remove("sure");t.textContent="删除"}},3000);return}
+  var did=t.dataset.id;
+  pgApi("DELETE","/messages/"+did).then(function(){PG.list=PG.list.filter(function(m){return String(m.id)!==did});pgPaint();toast("已删除")}).catch(function(){toast("删除失败")});return}
+ render();
+});
+document.addEventListener("input",function(e){
+ if(e.target.id==="q"){S.q=e.target.value;var p=e.target.selectionStart;render();var q=document.getElementById("q");q.focus();q.setSelectionRange(p,p)}
+});
+document.addEventListener("keydown",function(e){if(e.key!=="Enter")return;var m={mt:"send",pg_pw:"pgunlock"}[e.target.id];if(m){e.preventDefault();var b=document.querySelector('[data-a="'+m+'"]');if(b)b.click()}});
+document.addEventListener("input",function(e){if(e.target.id==="mt")pgCount()});
+setInterval(function(){if(S.view==="pager"&&PG.pw&&!document.hidden&&!S.sheet)pgLoad()},10000);
+setInterval(function(){var c=document.getElementById("clk");if(c)c.textContent=hm(Date.now())},20000);
+var lp;document.addEventListener("pointerdown",function(e){if(admin||!e.target.closest("#clk"))return;lp=setTimeout(function(){S.sheet={misc:"pass",title:"主人登录"};render()},800)});
+["pointerup","pointercancel"].forEach(function(n){document.addEventListener(n,function(){clearTimeout(lp)})});
+if(location.hash==="#admin"&&!admin)S.sheet={misc:"pass",title:"主人登录"};
+render();
+</script>
+</body>
+</html>
