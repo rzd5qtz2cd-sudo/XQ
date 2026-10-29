@@ -235,7 +235,7 @@ document.addEventListener("click",function(e){
  else if(a==="back"){S.view=S.cat?"folder":"home"}
  else if(a==="openCat"){S.view="folder";S.cat=C;S.edit=false}
  else if(a==="open"){var cc=findCat(C),it=cc.items.filter(function(x){return x.id===I})[0];
-  if(it.type==="pager"){if(!admin){toast("传呼机仅主人可用");return}S.cat=C;S.view="pager"}
+  if(it.type==="pager"){S.cat=C;S.view="pager"}
   else if(it.url){window.open(it.url,"_blank","noopener")}
   else{toast("「"+it.name+"」还在开发中");return}}
  else if(a==="newCat"){S.sheet={kind:"cat",title:"新建分类",name:"",icon:"📁",color:0}}
