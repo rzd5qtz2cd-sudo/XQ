@@ -9,7 +9,7 @@ const json = (o, s = 200) =>
 const MAX_CHARS = 100;
 const KEEP_ROWS = 500; // 服务器最多保留最近多少条
 
-export async function onRequestGet({ request, env }) {
+async function getList({ request, env }) {
   const u = new URL(request.url);
   let limit = parseInt(u.searchParams.get("limit") || "20", 10);
   if (!(limit > 0)) limit = 20;
@@ -27,7 +27,7 @@ export async function onRequestGet({ request, env }) {
   return json({ now: Math.floor(Date.now() / 1000), more, messages: results });
 }
 
-export async function onRequestPost({ request, env, data }) {
+async function postMsg({ request, env, data }) {
   if (data.role !== "admin") return json({ error: "forbidden" }, 403);
 
   let body;
@@ -46,3 +46,10 @@ export async function onRequestPost({ request, env, data }) {
   await env.DB.prepare("DELETE FROM messages WHERE id <= ?1").bind(id - KEEP_ROWS).run();
   return json({ id, ts });
 }
+
+const safe = (fn) => async (ctx) => {
+  try { return await fn(ctx); }
+  catch (e) { return json({ error: "server error: " + (e && e.message ? e.message : String(e)) }, 500); }
+};
+export const onRequestGet = safe(getList);
+export const onRequestPost = safe(postMsg);

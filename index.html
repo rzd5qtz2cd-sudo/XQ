@@ -103,7 +103,7 @@ var AK="myhome.admin";
 // 已发布的内容：在管理模式点“导出配置”，把得到的JSON粘贴替换下面的 null，访客看到的就是它
 var PUBLISHED=null;
 // 管理口令的哈希（默认口令 1234，进入管理后点“改口令”生成新的并替换这里）
-var PASS_HASH="95752e847fbf175bcc649c25039aa118cdb64f9bd89c826a42b3eb4b9dd435bc";
+var PASS_HASH="b3b955fb4f06f57176f6a52b91d282494e8e737d7e76e61a02b3b96f2df96f68";
 var admin=load(AK,false)===true;
 function clone(o){return JSON.parse(JSON.stringify(o))}
 var cats=admin?(load(KEY,null)||clone(PUBLISHED||defaults())):clone(PUBLISHED||defaults());
@@ -125,7 +125,7 @@ function pgApi(method,path,body){
  var hd={"X-Admin-Password":encodeURIComponent(PG.pw)};if(body)hd["Content-Type"]="application/json";
  return fetch(PAGER_API+path,{method:method,headers:hd,body:body?JSON.stringify(body):undefined,cache:"no-store"}).then(function(r){
   if(r.status===401)throw new Error("auth");
-  return r.json().then(function(j){if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j})})}
+  return r.json().catch(function(){throw new Error("HTTP "+r.status+"（服务器没有返回JSON，多半是函数未部署或异常）")}).then(function(j){if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j})})}
 function pgListHtml(){
  if(!PG.list.length)return '<div class="empty">'+(PG.st?"还没有消息":"加载中…")+'</div>';
  var h="";PG.list.forEach(function(m){h+='<div class="msg"><div class="m">'+fdt(m.ts)+'</div><div class="r"><div class="t">'+esc(m.text)+'</div><button class="x" data-a="pgdel" data-id="'+m.id+'">删除</button></div></div>'});
@@ -142,7 +142,7 @@ function pgLoad(more){
   var d=new Date();PG.st="已同步 "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());pgPaint()
  }).catch(function(e){
   if(e.message==="auth"){PG.pw="";save(PGK,"");PG.err="密码不对";PG.busy=false;render();return}
-  PG.err="网络错误，稍后自动重试";pgPaint()
+  PG.err=(e.message&&e.message!=="Failed to fetch")?("服务器返回："+e.message):"网络错误，稍后自动重试";pgPaint()
  }).then(function(){PG.busy=false})}
 function pgSend(){
  var inp=document.getElementById("mt");if(!inp)return;
