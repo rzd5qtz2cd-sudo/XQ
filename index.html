@@ -103,7 +103,7 @@ var AK="myhome.admin";
 // 已发布的内容：在管理模式点“导出配置”，把得到的JSON粘贴替换下面的 null，访客看到的就是它
 var PUBLISHED=null;
 // 管理口令的哈希（默认口令 1234，进入管理后点“改口令”生成新的并替换这里）
-var PASS_HASH="35a95ef9cd8c5c754804e77780082a86c029b36cdcda1020892edf8ae86c0061";
+var PASS_HASH="95752e847fbf175bcc649c25039aa118cdb64f9bd89c826a42b3eb4b9dd435bc";
 var admin=load(AK,false)===true;
 function clone(o){return JSON.parse(JSON.stringify(o))}
 var cats=admin?(load(KEY,null)||clone(PUBLISHED||defaults())):clone(PUBLISHED||defaults());
