@@ -58,6 +58,34 @@ button{cursor:pointer;border:0;background:none}
 .msg .x{flex:none;font-size:12px;padding:3px 9px;border-radius:8px;border:1px solid rgba(0,0,0,.45);color:var(--lcdi)}
 .msg .x.sure{background:#e5533f;color:#fff;border-color:#e5533f}
 .more{width:100%;height:38px;margin-top:8px;border-radius:10px;border:1px solid rgba(0,0,0,.35);color:var(--lcdi);font-size:13px}
+/* meds */
+.mcard{background:var(--sf);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.mcard.off{opacity:.6}
+.mcard h3{margin:0;font-size:17px}.mcard h3 small{color:var(--sub);font-weight:400;font-size:12px}
+.mcard .sub{color:var(--sub);font-size:13px;margin-top:2px}
+.dz{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12px;padding:3px 9px;border-radius:12px;border:1px solid var(--line);background:var(--bg);white-space:nowrap}
+.chip button{font-size:12px;color:var(--sub);padding:0 0 0 4px}
+.chip.ok{background:rgba(31,157,85,.15);color:#1f9d55;border-color:rgba(31,157,85,.4)}
+.chip.bad{background:rgba(229,83,63,.14);color:#e5533f;border-color:rgba(229,83,63,.4)}
+.chip.ring{background:rgba(232,146,26,.16);color:#d98200;border-color:rgba(232,146,26,.45)}
+.chip.wait{color:var(--sub)}
+.chip.na{color:var(--sub);border-style:dashed}
+.macts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.macts button{height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--line);font-size:13px;background:var(--bg)}
+.macts button.sure{background:#e5533f;color:#fff;border-color:#e5533f}
+.mhist{margin-top:8px;padding-top:6px;border-top:1px dashed var(--line)}
+.mform{background:var(--sf);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.mform label{display:block;font-size:13px;color:var(--sub);margin:10px 0 4px}
+.mform input,.mform select{width:100%;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:0 12px}
+.mform .send input{flex:1;width:auto}
+.wd{display:flex;gap:6px;margin-top:8px}
+.wd button{flex:1;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.wd button.sel{background:var(--ac);color:#fff;border-color:var(--ac)}
+.mfacts{display:flex;gap:10px;margin-top:14px}
+.mfacts button{flex:1;height:44px;border-radius:12px;border:1px solid var(--line);font-weight:600}
+.mfacts .ok{background:var(--ac);color:#fff;border-color:var(--ac)}
+.addbtn{width:100%;height:46px;border-radius:14px;border:2px dashed var(--sub);color:var(--sub);margin-bottom:12px;font-weight:600}
 .send{display:flex;gap:8px;margin-top:12px}
 .send input{flex:1;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--sf);padding:0 14px;outline:none}
 .send button{height:48px;padding:0 20px;border-radius:14px;background:var(--ac);color:#fff;font-weight:700}
@@ -94,7 +122,8 @@ function defaults(){return[
   {id:uid(),name:"调研问卷",icon:"📋",url:"",type:"link"},
   {id:uid(),name:"文字转语音",icon:"🔊",url:"",type:"link"}]},
  {id:uid(),name:"通讯",icon:"📟",color:1,items:[
-  {id:uid(),name:"传呼机",icon:"📟",url:"",type:"pager"}]},
+  {id:uid(),name:"传呼机",icon:"📟",url:"",type:"pager"},
+  {id:uid(),name:"服药提醒",icon:"💊",url:"",type:"meds"}]},
  {id:uid(),name:"小游戏",icon:"🎮",color:2,items:[
   {id:uid(),name:"我的第一个游戏",icon:"🕹️",url:"",type:"link"}]}]}
 function load(k,d){try{var v=localStorage.getItem(k);if(v)return JSON.parse(v)}catch(e){}return d}
@@ -103,7 +132,7 @@ var AK="myhome.admin";
 // 已发布的内容：在管理模式点“导出配置”，把得到的JSON粘贴替换下面的 null，访客看到的就是它
 var PUBLISHED=null;
 // 管理口令的哈希（默认口令 1234，进入管理后点“改口令”生成新的并替换这里）
-var PASS_HASH="95752e847fbf175bcc649c25039aa118cdb64f9bd89c826a42b3eb4b9dd435bc";
+var PASS_HASH="b3b955fb4f06f57176f6a52b91d282494e8e737d7e76e61a02b3b96f2df96f68";
 var admin=load(AK,false)===true;
 function clone(o){return JSON.parse(JSON.stringify(o))}
 var cats=admin?(load(KEY,null)||clone(PUBLISHED||defaults())):clone(PUBLISHED||defaults());
@@ -121,9 +150,9 @@ var PGK="myhome.pgpw";
 var PG={pw:load(PGK,""),list:[],more:false,err:"",st:"",busy:false};
 function pad2(n){return String(n).padStart(2,"0")}
 function fdt(ts){var d=new Date(ts*1000);return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+" "+pad2(d.getHours())+":"+pad2(d.getMinutes())}
-function pgApi(method,path,body){
+function pgApi(method,path,body,base){
  var hd={"X-Admin-Password":encodeURIComponent(PG.pw)};if(body)hd["Content-Type"]="application/json";
- return fetch(PAGER_API+path,{method:method,headers:hd,body:body?JSON.stringify(body):undefined,cache:"no-store"}).then(function(r){
+ return fetch((base||PAGER_API)+path,{method:method,headers:hd,body:body?JSON.stringify(body):undefined,cache:"no-store"}).then(function(r){
   if(r.status===401)throw new Error("auth");
   return r.json().catch(function(){throw new Error("HTTP "+r.status+"（服务器没有返回JSON，多半是函数未部署或异常）")}).then(function(j){if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j})})}
 function pgListHtml(){
@@ -152,6 +181,97 @@ function pgSend(){
  pgApi("POST","/messages",{text:v}).then(function(){inp.value="";pgCount();toast("已发送");PG.busy=false;pgLoad()})
  .catch(function(e){toast(e.message==="auth"?"密码不对":"发送失败："+e.message)})
  .then(function(){if(btn)btn.disabled=false})}
+/* ---------- 服药提醒 ---------- */
+var MD={list:[],acks:[],st:"",err:"",busy:false,form:null,open:{}};
+var WDN=["日","一","二","三","四","五","六"];
+function medApi(m,p,b){return pgApi(m,p,b,"/api/med")}
+function dayNum(s){var p=s.split("-");return Math.round(Date.UTC(+p[0],+p[1]-1,+p[2])/86400000)}
+function dateStr(d){return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())}
+function addDays(s,n){var p=s.split("-");return dateStr(new Date(+p[0],+p[1]-1,+p[2]+n))}
+function medOccurs(m,ds){var dn=dayNum(ds);
+ if(m.start&&dn<dayNum(m.start))return false;
+ if(m.end&&dn>dayNum(m.end))return false;
+ if(m.kind==="d")return true;
+ if(m.kind==="w")return !!((m.wmask>>((dn+4)%7))&1);
+ if(m.kind==="i")return m.every>0&&(dn-dayNum(m.start))%m.every===0;
+ return false}
+function slotMs(ds,t){var p=ds.split("-"),h=t.split(":");return new Date(+p[0],+p[1]-1,+p[2],+h[0],+h[1]).getTime()}
+function hmOf(sec){var d=new Date(sec*1000);return pad2(d.getHours())+":"+pad2(d.getMinutes())}
+function mdAck(id,ds,t){for(var i=0;i<MD.acks.length;i++){var a=MD.acks[i];if(a.med_id===id&&a.date===ds&&a.slot===t)return a}return null}
+function mdState(m,ds,t){
+ var a=mdAck(m.id,ds,t),ep=slotMs(ds,t),now=Date.now();
+ if(a&&a.status==="read")return{c:"ok",t:"✅ 已阅读 "+hmOf(a.at)};
+ if(a&&a.status==="missed")return{c:"bad",t:"❌ 未阅读（已停止提醒）"};
+ if(!m.enabled||ep<m.upd*1000)return null;
+ if(now<ep)return{c:"wait",t:"⏳ 待提醒"};
+ if(now<ep+570000)return{c:"ring",t:"🔔 提醒中，等待确认"};
+ return{c:"na",t:"❔ 设备未上报"}}
+function schedText(m){
+ var s=m.kind==="d"?"每天":m.kind==="w"?"每周"+WDN.filter(function(_,i){return(m.wmask>>i)&1}).join("、"):"每隔"+m.every+"天（"+m.start.slice(5)+" 起）";
+ return s+" · "+m.times.join(" ")+(m.end?" · 至 "+m.end.slice(5):"")}
+function mdChips(m,ds,withDate){
+ if(!medOccurs(m,ds))return"";
+ var h="";m.times.forEach(function(t){var s=mdState(m,ds,t);if(s)h+='<span class="chip '+s.c+'">'+(withDate?ds.slice(5)+" ":"")+t+" "+s.t+'</span>'});
+ return h}
+function mdCard(m){
+ var today=dateStr(new Date()),h='<div class="mcard'+(m.enabled?'':' off')+'"><h3>'+esc(m.name)+(m.enabled?'':' <small>（已停用）</small>')+'</h3>';
+ h+='<div class="sub">'+esc([m.how,m.dose].filter(Boolean).join(" · "))+'</div><div class="sub">'+esc(schedText(m))+'</div>';
+ var c=mdChips(m,today,false);
+ h+='<div class="dz">'+(c||'<span class="sub">'+(m.enabled?'今天不用服药':'')+'</span>')+'</div>';
+ if(MD.open[m.id]){var hh="";for(var i=1;i<=6;i++)hh+=mdChips(m,addDays(today,-i),true);h+='<div class="mhist dz">'+(hh||'<span class="sub">近 6 天没有记录</span>')+'</div>'}
+ h+='<div class="macts"><button data-a="mdedit" data-id="'+m.id+'">编辑</button><button data-a="mdtoggle" data-id="'+m.id+'">'+(m.enabled?'停用':'启用')+'</button><button data-a="mdhist" data-id="'+m.id+'">'+(MD.open[m.id]?'收起记录':'近7天记录')+'</button><button data-a="mddel" data-id="'+m.id+'">删除</button></div></div>';
+ return h}
+function mdListHtml(){
+ if(!MD.list.length)return'<div class="empty">'+(MD.st?"还没有服药提醒，点上面的“新增”":"加载中…")+'</div>';
+ return MD.list.map(mdCard).join("")}
+function mdPaint(){var l=document.getElementById("mlist");if(l)l.innerHTML=mdListHtml();var s=document.getElementById("mdst");if(s)s.textContent=MD.err||MD.st}
+function mdBlank(){return{id:0,name:"",how:"",dose:"",times:["08:00"],kind:"d",wmask:127,every:2,start:dateStr(new Date()),end:"",enabled:true}}
+function mdRead(){var f=MD.form;if(!f)return;
+ function v(id){var e=document.getElementById(id);return e?e.value:null}
+ var x;
+ if((x=v("mf_name"))!==null)f.name=x;
+ if((x=v("mf_how"))!==null)f.how=x;
+ if((x=v("mf_dose"))!==null)f.dose=x;
+ if((x=v("mf_kind"))!==null)f.kind=x;
+ if((x=v("mf_every"))!==null)f.every=parseInt(x,10)||2;
+ if((x=v("mf_start"))!==null)f.start=x;
+ if((x=v("mf_end"))!==null)f.end=x}
+function mdFormHtml(f){
+ var h='<div class="mform"><b>'+(f.id?"编辑提醒":"新增提醒")+'</b>';
+ h+='<label>药物名称</label><input id="mf_name" maxlength="24" autocomplete="off" value="'+esc(f.name)+'">';
+ h+='<label>用法</label><input id="mf_how" maxlength="30" autocomplete="off" placeholder="如：饭后口服" value="'+esc(f.how)+'">';
+ h+='<label>用量</label><input id="mf_dose" maxlength="20" autocomplete="off" placeholder="如：1片 / 2粒 / 10ml" value="'+esc(f.dose)+'">';
+ h+='<label>提醒时间（最多 8 个）</label><div class="dz" style="margin:0 0 6px">'+f.times.map(function(t){return'<span class="chip">'+t+'<button type="button" data-a="mddeltime" data-v="'+t+'" aria-label="删除'+t+'">✕</button></span>'}).join("")+'</div>';
+ h+='<div class="send" style="margin-top:0"><input id="mf_time" type="time" value="12:00"><button type="button" data-a="mdaddtime">添加时间</button></div>';
+ h+='<label>重复方式</label><select id="mf_kind"><option value="d"'+(f.kind==="d"?" selected":"")+'>每天</option><option value="w"'+(f.kind==="w"?" selected":"")+'>每周指定星期</option><option value="i"'+(f.kind==="i"?" selected":"")+'>每隔 N 天（如每 2 天、每 7 天）</option></select>';
+ if(f.kind==="w")h+='<div class="wd">'+WDN.map(function(n,i){return'<button type="button" class="'+(((f.wmask>>i)&1)?"sel":"")+'" data-a="mdwd" data-v="'+i+'">'+n+'</button>'}).join("")+'</div>';
+ if(f.kind==="i")h+='<label>间隔天数</label><input id="mf_every" type="number" min="2" max="365" inputmode="numeric" value="'+f.every+'"><p class="hint" style="margin:6px 0 0">从下面的“开始日期”当天算起，每隔这么多天服一次。</p>';
+ h+='<label>开始日期</label><input id="mf_start" type="date" value="'+esc(f.start)+'">';
+ h+='<label>结束日期（留空 = 长期服用；疗程药请填写）</label><input id="mf_end" type="date" value="'+esc(f.end)+'">';
+ h+='<div class="mfacts"><button type="button" data-a="mdcancel">取消</button><button type="button" class="ok" data-a="mdsave">保存并推送到设备</button></div></div>';
+ return h}
+function mdLoad(){
+ if(!PG.pw||MD.busy)return;MD.busy=true;
+ var since=addDays(dateStr(new Date()),-7);
+ Promise.all([medApi("GET","/meds"),medApi("GET","/acks?since="+since)]).then(function(r){
+  MD.list=r[0].meds;MD.acks=r[1].acks;MD.err="";
+  var d=new Date();MD.st="已同步 "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds());mdPaint()
+ }).catch(function(e){
+  if(e.message==="auth"){PG.pw="";save(PGK,"");PG.err="密码不对";MD.busy=false;render();return}
+  MD.err=(e.message&&e.message!=="Failed to fetch")?("服务器返回："+e.message):"网络错误，稍后自动重试";mdPaint()
+ }).then(function(){MD.busy=false})}
+function mdOnRender(){if(S.view==="meds"&&PG.pw)mdLoad()}
+function mdSave(){
+ mdRead();var f=MD.form;
+ if(!f.name.trim()){toast("请填写药物名称");return}
+ if(!f.times.length){toast("请至少添加一个提醒时间");return}
+ if(f.kind==="w"&&!f.wmask){toast("请至少选择一个星期");return}
+ if(f.kind==="i"&&!(f.every>=2&&f.every<=365)){toast("间隔天数需在 2~365 之间");return}
+ if(!f.start){toast("请选择开始日期");return}
+ var body={name:f.name,how:f.how,dose:f.dose,times:f.times,kind:f.kind,wmask:f.wmask,every:f.every,start:f.start,end:f.end,enabled:f.enabled};
+ (f.id?medApi("PUT","/meds/"+f.id,body):medApi("POST","/meds",body)).then(function(){
+  MD.form=null;toast("已保存，设备联网后会自动收到");render();MD.busy=false;mdLoad()
+ }).catch(function(e){toast(e.message==="auth"?"密码不对":"保存失败："+e.message)})}
 function pgOnRender(){if(S.view==="pager"&&PG.pw){pgCount();pgLoad()}}
 var S={view:"home",cat:null,edit:false,q:"",sheet:null};
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -188,6 +308,15 @@ function render(){
   c.items.forEach(function(it){h+='<button class="tile" data-a="'+(S.edit?'editItem':'open')+'" data-c="'+c.id+'" data-i="'+it.id+'"><i style="background:'+COLORS[c.color]+'">'+esc(it.icon)+'</i><span>'+esc(it.name)+'</span></button>'});
   if(S.edit||!c.items.length)h+='<button class="tile add" data-a="newItem" data-c="'+c.id+'"><i>＋</i><span>添加入口</span></button>';
   h+='</div>';
+ }else if(S.view==="meds"){
+  h+='<div class="path"><button class="back" data-a="back" aria-label="返回">‹</button><h1>💊 服药提醒</h1>'+(PG.pw?'<button class="pill" data-a="pglogout">锁定</button>':'')+'</div>';
+  if(!PG.pw){
+   h+='<div class="send" style="margin-top:0"><input id="pg_pw" type="password" autocomplete="current-password" placeholder="密码"><button data-a="pgunlock">进入</button></div>'
+    +(PG.err?'<p class="hint" style="color:#e5533f;margin-top:10px">'+esc(PG.err)+'</p>':'');
+  }else{
+   if(MD.form)h+=mdFormHtml(MD.form);else h+='<button class="addbtn" data-a="mdnew">＋ 新增服药提醒</button>';
+   h+='<p class="hint" style="display:flex;justify-content:space-between;gap:8px"><span id="mdst">'+esc(MD.err||MD.st)+'</span><span>设备休眠时约每10分钟同步一次</span></p><div id="mlist">'+mdListHtml()+'</div>';
+  }
  }else if(S.view==="pager"){
   h+='<div class="path"><button class="back" data-a="back" aria-label="返回">‹</button><h1>📟 传呼机</h1>'+(PG.pw?'<button class="pill" data-a="pglogout">锁定</button>':'')+'</div>';
   if(!PG.pw){
@@ -201,7 +330,7 @@ function render(){
  }
  if(S.sheet)h+=sheetHtml();
  a.innerHTML=h;
- pgOnRender();
+ pgOnRender();mdOnRender();
 }
 
 function sheetHtml(){
@@ -214,7 +343,7 @@ function sheetHtml(){
   COLORS.forEach(function(c,i){h+='<button type="button" class="'+(i===s.color?'sel':'')+'" style="background:'+c+'" data-a="pickColor" data-v="'+i+'" aria-label="颜色'+(i+1)+'"></button>'});
   h+='</div>';
  }else{
-  h+='<label>类型</label><select id="f_type"><option value="link"'+(s.type==="link"?' selected':'')+'>链接 / 页面</option><option value="pager"'+(s.type==="pager"?' selected':'')+'>传呼机（站内）</option></select>';
+  h+='<label>类型</label><select id="f_type"><option value="link"'+(s.type==="link"?' selected':'')+'>链接 / 页面</option><option value="pager"'+(s.type==="pager"?' selected':'')+'>传呼机（站内）</option><option value="meds"'+(s.type==="meds"?' selected':'')+'>服药提醒（站内）</option></select>';
   h+='<label>链接地址（留空则提示“待开发”）</label><input id="f_url" inputmode="url" placeholder="https://" value="'+esc(s.url)+'">';
  }
  h+='<div class="acts">';
@@ -236,6 +365,7 @@ document.addEventListener("click",function(e){
  else if(a==="openCat"){S.view="folder";S.cat=C;S.edit=false}
  else if(a==="open"){var cc=findCat(C),it=cc.items.filter(function(x){return x.id===I})[0];
   if(it.type==="pager"){S.cat=C;S.view="pager"}
+  else if(it.type==="meds"){S.cat=C;S.view="meds"}
   else if(it.url){window.open(it.url,"_blank","noopener")}
   else{toast("「"+it.name+"」还在开发中");return}}
  else if(a==="newCat"){S.sheet={kind:"cat",title:"新建分类",name:"",icon:"📁",color:0}}
@@ -269,6 +399,21 @@ document.addEventListener("click",function(e){
  else if(a==="copyJson"){var js=S.sheet.json;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(js).then(function(){toast("已复制")},function(){toast("请长按文本框手动复制")})}else toast("请长按文本框手动复制");return}
  else if(a==="newPass"){S.sheet={misc:"newpass",title:"修改口令"}}
  else if(a==="doNewPass"){var pw=val("f_pw");if(!pw){toast("请输入新口令");return}sha(pw).then(function(h){S.sheet.hash=h;render()});return}
+
+ else if(a==="mdnew"){MD.form=mdBlank()}
+ else if(a==="mdedit"){var mm=MD.list.filter(function(x){return String(x.id)===t.dataset.id})[0];if(!mm)return;MD.form={id:mm.id,name:mm.name,how:mm.how,dose:mm.dose,times:mm.times.slice(),kind:mm.kind,wmask:mm.wmask,every:mm.every>=2?mm.every:2,start:mm.start,end:mm.end,enabled:mm.enabled}}
+ else if(a==="mdcancel"){MD.form=null}
+ else if(a==="mdaddtime"){mdRead();var tv=val("mf_time");if(!/^\d\d:\d\d$/.test(tv)){toast("请选择时间");return}
+  if(MD.form.times.indexOf(tv)<0){if(MD.form.times.length>=8){toast("最多 8 个提醒时间");return}MD.form.times.push(tv);MD.form.times.sort()}}
+ else if(a==="mddeltime"){mdRead();MD.form.times=MD.form.times.filter(function(x){return x!==t.dataset.v})}
+ else if(a==="mdwd"){mdRead();MD.form.wmask^=(1<<(+t.dataset.v));}
+ else if(a==="mdsave"){mdSave();return}
+ else if(a==="mdhist"){MD.open[t.dataset.id]=!MD.open[t.dataset.id];mdPaint();return}
+ else if(a==="mdtoggle"){var tm=MD.list.filter(function(x){return String(x.id)===t.dataset.id})[0];if(!tm)return;
+  medApi("PUT","/meds/"+tm.id,{enabled:!tm.enabled}).then(function(){toast(tm.enabled?"已停用":"已启用");MD.busy=false;mdLoad()}).catch(function(e){toast("操作失败："+e.message)});return}
+ else if(a==="mddel"){
+  if(!t.classList.contains("sure")){t.classList.add("sure");t.textContent="再点一次确认";setTimeout(function(){if(t.isConnected){t.classList.remove("sure");t.textContent="删除"}},3000);return}
+  medApi("DELETE","/meds/"+t.dataset.id).then(function(){toast("已删除");MD.busy=false;mdLoad()}).catch(function(e){toast("删除失败："+e.message)});return}
  else if(a==="send"){pgSend();return}
  else if(a==="pgunlock"){var pv=val("pg_pw");if(!pv)return;PG.pw=pv;PG.err="";PG.st="";save(PGK,pv)}
  else if(a==="pglogout"){PG.pw="";PG.list=[];PG.st="";save(PGK,"")}
@@ -282,12 +427,15 @@ document.addEventListener("click",function(e){
 document.addEventListener("input",function(e){
  if(e.target.id==="q"){S.q=e.target.value;var p=e.target.selectionStart;render();var q=document.getElementById("q");q.focus();q.setSelectionRange(p,p)}
 });
-document.addEventListener("keydown",function(e){if(e.key!=="Enter")return;var m={mt:"send",pg_pw:"pgunlock"}[e.target.id];if(m){e.preventDefault();var b=document.querySelector('[data-a="'+m+'"]');if(b)b.click()}});
-document.addEventListener("input",function(e){if(e.target.id==="mt")pgCount()});
+document.addEventListener("keydown",function(e){if(e.key!=="Enter")return;var m={mt:"send",pg_pw:"pgunlock",mf_name:"mdsave"}[e.target.id];if(m){e.preventDefault();var b=document.querySelector('[data-a="'+m+'"]');if(b)b.click()}});
+document.addEventListener("input",function(e){if(e.target.id==="mt")pgCount();else if(/^mf_(name|how|dose|every|start|end)$/.test(e.target.id))mdRead()});
+document.addEventListener("change",function(e){if(e.target.id==="mf_kind"){mdRead();render()}else if(/^mf_(start|end|every)$/.test(e.target.id))mdRead()});
+setInterval(function(){if(S.view==="meds"&&PG.pw&&!document.hidden&&!S.sheet)mdLoad()},10000);
 setInterval(function(){if(S.view==="pager"&&PG.pw&&!document.hidden&&!S.sheet)pgLoad()},10000);
 setInterval(function(){var c=document.getElementById("clk");if(c)c.textContent=hm(Date.now())},20000);
 var lp;document.addEventListener("pointerdown",function(e){if(admin||!e.target.closest("#clk"))return;lp=setTimeout(function(){S.sheet={misc:"pass",title:"主人登录"};render()},800)});
 ["pointerup","pointercancel"].forEach(function(n){document.addEventListener(n,function(){clearTimeout(lp)})});
+if(location.hash==="#meds")S.view="meds";
 if(location.hash==="#admin"&&!admin)S.sheet={misc:"pass",title:"主人登录"};
 render();
 </script>
