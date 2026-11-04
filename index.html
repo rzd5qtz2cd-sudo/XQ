@@ -189,7 +189,7 @@ function pgSend(){
 /* ---------- 健康提醒（服药 / 医疗 / 饮食 / 运动 / 其他） ---------- */
 var MD={list:[],acks:[],st:"",err:"",busy:false,form:null,open:{}};
 var WDN=["日","一","二","三","四","五","六"];
-var CATS=[{k:"med",n:"服药提醒",s:"服药",e:"💊",bg:"#ffd60a",fg:"#222"},{k:"clinic",n:"医疗提醒",s:"医疗",e:"🏥",bg:"#ff8c00",fg:"#222"},{k:"diet",n:"饮食提醒",s:"饮食",e:"🍽️",bg:"#1a73e8",fg:"#fff"},{k:"sport",n:"运动提醒",s:"运动",e:"🏃",bg:"#1e8e3e",fg:"#fff"},{k:"other",n:"其他提醒",s:"其他",e:"🔔",bg:"#d7beff",fg:"#222"}];
+var CATS=[{k:"med",n:"服药提醒",s:"服药",e:"💊",bg:"#ffd60a",fg:"#222"},{k:"clinic",n:"医疗提醒",s:"医疗",e:"🏥",bg:"#ff96b9",fg:"#222"},{k:"diet",n:"饮食提醒",s:"饮食",e:"🍽️",bg:"#1a73e8",fg:"#fff"},{k:"sport",n:"运动提醒",s:"运动",e:"🏃",bg:"#1e8e3e",fg:"#fff"},{k:"other",n:"其他提醒",s:"其他",e:"🔔",bg:"#7832b4",fg:"#fff"}];
 function catOf(k){for(var i=0;i<CATS.length;i++)if(CATS[i].k===k)return CATS[i];return CATS[0]}
 function medApi(m,p,b){return pgApi(m,p,b,"/api/med")}
 function dayNum(s){var p=s.split("-");return Math.round(Date.UTC(+p[0],+p[1]-1,+p[2])/86400000)}
